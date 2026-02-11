@@ -7,8 +7,7 @@ const registerRules = [
 ]
 
 const loginRules = [
-  body('email').isEmail().withMessage('Valid email required'),
-  body('password').isLength({ min: 6 }).withMessage('Password required')
+  body('email').isEmail().withMessage('Valid email required')
 ]
 
 const requestResetRules = [

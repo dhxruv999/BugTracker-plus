@@ -75,6 +75,15 @@ const listActiveDevelopers = async () => {
   return rows
 }
 
+const countPendingUsers = async () => {
+  const [rows] = await db.execute(
+    `SELECT COUNT(*) AS total
+     FROM users
+     WHERE status = 'pending' AND is_deleted = FALSE`
+  )
+  return rows[0]?.total || 0
+}
+
 const updateUser = async (id, updates) => {
   const fields = []
   const values = []
@@ -107,5 +116,6 @@ module.exports = {
   listUsers,
   updateUser,
   softDeleteUser,
-  listActiveDevelopers
+  listActiveDevelopers,
+  countPendingUsers
 }

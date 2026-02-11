@@ -12,9 +12,18 @@ export const AuthProvider = ({ children }) => {
     const storedToken = localStorage.getItem('bt_token')
     const storedUser = localStorage.getItem('bt_user')
     if (storedToken && storedUser) {
-      setToken(storedToken)
-      setUser(JSON.parse(storedUser))
-      setAuthToken(storedToken)
+      try {
+        const parsedUser = JSON.parse(storedUser)
+        setToken(storedToken)
+        setUser(parsedUser)
+        setAuthToken(storedToken)
+      } catch (error) {
+        localStorage.removeItem('bt_token')
+        localStorage.removeItem('bt_user')
+        setToken(null)
+        setUser(null)
+        setAuthToken(null)
+      }
     }
     setLoading(false)
   }, [])

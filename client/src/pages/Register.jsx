@@ -7,6 +7,7 @@ const Register = () => {
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   const onChange = (e) => {
@@ -16,16 +17,17 @@ const Register = () => {
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setSuccess('')
     setLoading(true)
     try {
       const result = await register(form)
       if (result?.status === 'pending') {
-        navigate('/login')
+        setSuccess('Account created successfully. Account approval pending.')
       } else {
-        navigate('/login')
+        setSuccess('Account created successfully. You can now sign in.')
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed')
+      setError(err.response?.data?.message || err.message || 'Registration failed')
     } finally {
       setLoading(false)
     }
@@ -38,23 +40,34 @@ const Register = () => {
         <h1>Create account</h1>
         <p className="auth-tagline">Your account will be reviewed by a Project Admin or Org Admin.</p>
         {error && <div className="alert">{error}</div>}
-        <form onSubmit={onSubmit}>
-          <label>
-            Name
-            <input name="name" value={form.name} onChange={onChange} required />
-          </label>
-          <label>
-            Email
-            <input name="email" type="email" value={form.email} onChange={onChange} required />
-          </label>
-          <label>
-            Password
-            <input name="password" type="password" value={form.password} onChange={onChange} required />
-          </label>
-          <button type="submit" className="primary" disabled={loading}>
-            {loading ? 'Creating...' : 'Create account'}
-          </button>
-        </form>
+        {success ? (
+          <div className="success">
+            {success}
+            <div className="actions" style={{ marginTop: '1rem' }}>
+              <button className="primary" type="button" onClick={() => navigate('/login')}>
+                Go to sign in
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit}>
+            <label>
+              Name
+              <input name="name" value={form.name} onChange={onChange} required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" value={form.email} onChange={onChange} required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" value={form.password} onChange={onChange} required />
+            </label>
+            <button type="submit" className="primary" disabled={loading}>
+              {loading ? 'Creating...' : 'Create account'}
+            </button>
+          </form>
+        )}
         <div className="hint">
           Already have an account? <Link to="/login">Sign in</Link>
         </div>

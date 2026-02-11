@@ -1,21 +1,52 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import api from '../services/api'
 
 const TopNav = () => {
   const { user, logout } = useAuth()
   const location = useLocation()
+  const [pendingCount, setPendingCount] = useState(0)
 
-  if (!user) return null
-
-  const isAdmin = user.role === 'org_admin' || user.role === 'project_admin'
+  const isAdmin = user?.role === 'org_admin' || user?.role === 'project_admin'
   const roleLabelMap = {
     org_admin: 'Org Admin',
     project_admin: 'Project Admin',
     developer: 'Developer',
     tester: 'Tester'
   }
-  const roleLabel = roleLabelMap[user.role] || user.role
+  const roleLabel = user ? (roleLabelMap[user.role] || user.role) : ''
+
+  useEffect(() => {
+    if (!user || !isAdmin) {
+      setPendingCount(0)
+      return undefined
+    }
+
+    let isMounted = true
+
+    const fetchPending = async () => {
+      try {
+        const { data } = await api.get('/users/pending-count')
+        if (isMounted) setPendingCount(Number(data?.count || 0))
+      } catch (err) {
+        if (isMounted) setPendingCount(0)
+      }
+    }
+
+    fetchPending()
+    const interval = setInterval(fetchPending, 30000)
+    const handler = () => fetchPending()
+    window.addEventListener('pending-approvals-updated', handler)
+
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+      window.removeEventListener('pending-approvals-updated', handler)
+    }
+  }, [isAdmin, location.pathname, user])
+
+  if (!user) return null
 
   return (
     <header className="topnav">
@@ -27,6 +58,11 @@ const TopNav = () => {
         {isAdmin && (
           <Link className={location.pathname.startsWith('/admin') ? 'active' : ''} to="/admin/users">
             User Management
+            {pendingCount > 0 && (
+              <span className="nav-badge" aria-label={`${pendingCount} pending approvals`} title={`${pendingCount} pending approvals`}>
+                {pendingCount}
+              </span>
+            )}
           </Link>
         )}
       </nav>

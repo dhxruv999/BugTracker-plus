@@ -38,6 +38,7 @@ const AdminUsers = () => {
       ])
       setPending(pendingRes.data)
       setActive(activeRes.data)
+      window.dispatchEvent(new Event('pending-approvals-updated'))
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load users')
     }

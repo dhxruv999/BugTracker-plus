@@ -13,6 +13,7 @@ const Login = () => {
   const [showReset, setShowReset] = useState(false)
   const [isOrgAdminReset, setIsOrgAdminReset] = useState(false)
   const [canRequestReset, setCanRequestReset] = useState(false)
+  const [showOrgAdminForm, setShowOrgAdminForm] = useState(false)
   const [resetForm, setResetForm] = useState({ securityPhrase: '', newPassword: '' })
   const [loading, setLoading] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
@@ -29,13 +30,22 @@ const Login = () => {
     setShowReset(false)
     setIsOrgAdminReset(false)
     setCanRequestReset(false)
+    setShowOrgAdminForm(false)
     setLoading(true)
     try {
       await login(form.email, form.password)
       navigate('/dashboard')
     } catch (err) {
       const status = err.response?.status
-      setError(err.response?.data?.message || 'Unable to sign in. Please try again.')
+      if (status === 401) {
+        setError('Incorrect password')
+      } else if (status === 404) {
+        setError('Email not found')
+      } else if (status === 403) {
+        setError('Account approval pending')
+      } else {
+        setError(err.response?.data?.message || 'Unable to sign in. Please try again.')
+      }
       if (status === 401) {
         const data = err.response?.data || {}
         const orgAdmin = Boolean(data.isOrgAdmin)
@@ -110,43 +120,54 @@ const Login = () => {
           </button>
         </form>
         {showReset && (
-          <div className="card" style={{ marginTop: '1.5rem' }}>
-            <h3>Need help signing in?</h3>
+          <div className="hint" style={{ marginTop: '0.8rem' }}>
             {resetError && <div className="alert">{resetError}</div>}
             {resetMessage && <div className="success">{resetMessage}</div>}
             {canRequestReset && !isOrgAdminReset && (
-              <div className="actions" style={{ marginBottom: '1rem' }}>
-                <button className="ghost" type="button" onClick={requestReset} disabled={resetLoading}>
-                  {resetLoading ? 'Requesting...' : 'Request Password Reset'}
-                </button>
-              </div>
+              <button
+                className="link-button"
+                type="button"
+                onClick={requestReset}
+                disabled={resetLoading}
+              >
+                {resetLoading ? 'Requesting reset...' : 'Forgot password? Request reset'}
+              </button>
             )}
             {isOrgAdminReset && (
-              <div className="role-guide">
-                <h4>Org Admin Recovery</h4>
-                <p>Use the security phrase to reset the Org Admin password.</p>
-                <label className="inline-field">
-                  Security Phrase
-                  <input
-                    type="password"
-                    value={resetForm.securityPhrase}
-                    onChange={(e) => setResetForm((prev) => ({ ...prev, securityPhrase: e.target.value }))}
-                  />
-                </label>
-                <label className="inline-field">
-                  New Password
-                  <input
-                    type="password"
-                    value={resetForm.newPassword}
-                    onChange={(e) => setResetForm((prev) => ({ ...prev, newPassword: e.target.value }))}
-                  />
-                </label>
-                <div className="actions">
-                  <button className="primary" type="button" onClick={submitOrgAdminReset} disabled={resetLoading}>
-                    {resetLoading ? 'Resetting...' : 'Reset Org Admin Password'}
-                  </button>
-                </div>
-              </div>
+              <>
+                <button
+                  className="link-button"
+                  type="button"
+                  onClick={() => setShowOrgAdminForm((prev) => !prev)}
+                >
+                  Org Admin reset? Use security phrase
+                </button>
+                {showOrgAdminForm && (
+                  <div className="role-guide">
+                    <label className="inline-field">
+                      Security Phrase
+                      <input
+                        type="password"
+                        value={resetForm.securityPhrase}
+                        onChange={(e) => setResetForm((prev) => ({ ...prev, securityPhrase: e.target.value }))}
+                      />
+                    </label>
+                    <label className="inline-field">
+                      New Password
+                      <input
+                        type="password"
+                        value={resetForm.newPassword}
+                        onChange={(e) => setResetForm((prev) => ({ ...prev, newPassword: e.target.value }))}
+                      />
+                    </label>
+                    <div className="actions">
+                      <button className="primary" type="button" onClick={submitOrgAdminReset} disabled={resetLoading}>
+                        {resetLoading ? 'Resetting...' : 'Reset Org Admin Password'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

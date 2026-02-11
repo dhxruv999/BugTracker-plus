@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const asyncHandler = require('../middleware/asyncHandler')
-const { listUsers, updateUser, softDeleteUser, findById, findByEmail, listActiveDevelopers } = require('../models/userModel')
+const { listUsers, updateUser, softDeleteUser, findById, findByEmail, listActiveDevelopers, countPendingUsers } = require('../models/userModel')
 const { ROLES, ROLE_RANK } = require('../utils/constants')
 
 const isAdminRole = (role) => role === 'org_admin' || role === 'project_admin'
@@ -30,6 +30,11 @@ const getUsers = asyncHandler(async (req, res) => {
   const resetFilter = resetRequested === 'true' ? true : resetRequested === 'false' ? false : undefined
   const users = await listUsers({ role: roleFilter, status: statusFilter, passwordResetRequested: resetFilter })
   res.json(users)
+})
+
+const getPendingCount = asyncHandler(async (req, res) => {
+  const total = await countPendingUsers()
+  res.json({ count: total })
 })
 
 const getAssignees = asyncHandler(async (req, res) => {
@@ -278,6 +283,7 @@ const orgAdminResetPassword = asyncHandler(async (req, res) => {
 
 module.exports = {
   getUsers,
+  getPendingCount,
   getAssignees,
   updateSelf,
   updateUserById,

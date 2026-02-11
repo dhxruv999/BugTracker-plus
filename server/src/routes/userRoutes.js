@@ -1,6 +1,7 @@
 const express = require('express')
 const {
   getUsers,
+  getPendingCount,
   getAssignees,
   updateSelf,
   updateUserById,
@@ -30,6 +31,7 @@ const router = express.Router()
 
 router.use(authenticate)
 
+router.get('/pending-count', authorizeRoles('org_admin', 'project_admin'), getPendingCount)
 router.put('/me', updateSelfRules, validateRequest, updateSelf)
 router.put('/change-password', changePasswordRules, validateRequest, changePassword)
 router.post('/request-password-reset', requestPasswordResetRules, validateRequest, requestPasswordReset)
