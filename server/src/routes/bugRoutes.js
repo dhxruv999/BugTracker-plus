@@ -1,5 +1,6 @@
 const express = require('express')
 const bugController = require('../controllers/bugController')
+const commentController = require('../controllers/commentController')
 const { authenticate, authorizeRoles } = require('../middleware/auth')
 const validateRequest = require('../middleware/validate')
 const {
@@ -8,6 +9,7 @@ const {
   updateStatusRules,
   assignBugRules
 } = require('../validators/bugValidators')
+const { createCommentRules } = require('../validators/commentValidators')
 
 const router = express.Router()
 
@@ -26,13 +28,13 @@ router.post(
 
 router.put(
   '/:id',
-  authorizeRoles('Admin', 'Tester'),
+  authorizeRoles('Admin', 'Developer'),
   updateBugRules,
   validateRequest,
   bugController.updateBug
 )
 
-router.delete('/:id', authorizeRoles('Admin', 'Tester'), bugController.deleteBug)
+router.delete('/:id', authorizeRoles('Admin'), bugController.deleteBug)
 
 router.patch(
   '/:id/assign',
@@ -49,5 +51,14 @@ router.patch(
   validateRequest,
   bugController.updateStatus
 )
+
+router.get('/:id/comments', commentController.listComments)
+router.post(
+  '/:id/comments',
+  createCommentRules,
+  validateRequest,
+  commentController.addComment
+)
+router.delete('/:id/comments/:commentId', commentController.deleteComment)
 
 module.exports = router

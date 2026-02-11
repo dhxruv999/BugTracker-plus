@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Bugs from './pages/Bugs'
+import BugDetails from './pages/BugDetails'
 import Reports from './pages/Reports'
 import Unauthorized from './pages/Unauthorized'
 
@@ -37,9 +38,17 @@ const App = () => {
           }
         />
         <Route
+          path="/bugs/:id"
+          element={
+            <ProtectedRoute>
+              <BugDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/reports"
           element={
-            <ProtectedRoute roles={['Admin', 'Tester']}>
+            <ProtectedRoute>
               <Reports />
             </ProtectedRoute>
           }

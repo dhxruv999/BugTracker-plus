@@ -8,6 +8,8 @@ const TopNav = () => {
 
   if (!user) return null
 
+  const roleLabel = user.role === 'Admin' ? 'Project Admin' : user.role
+
   return (
     <header className="topnav">
       <div className="brand">BugTracker<span>+</span></div>
@@ -17,7 +19,7 @@ const TopNav = () => {
         <Link className={location.pathname === '/reports' ? 'active' : ''} to="/reports">Reports</Link>
       </nav>
       <div className="profile">
-        <span>{user.name} · {user.role}</span>
+        <span>{user.name} · {roleLabel}</span>
         <button className="ghost" onClick={logout}>Sign out</button>
       </div>
     </header>

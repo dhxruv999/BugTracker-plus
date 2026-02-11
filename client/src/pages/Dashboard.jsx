@@ -35,7 +35,7 @@ const Dashboard = () => {
         {
           label: 'Bugs by Status',
           data: values,
-          backgroundColor: ['#ffb703', '#219ebc', '#8ecae6', '#adb5bd']
+          backgroundColor: ['#ffb703', '#219ebc', '#8ecae6', '#adb5bd', '#ef476f']
         }
       ]
     }

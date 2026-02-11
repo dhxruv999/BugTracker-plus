@@ -35,7 +35,7 @@ const Reports = () => {
 
       <div className="card">
         <h3>Bug Export</h3>
-        <p>Download a CSV snapshot of all tracked bugs.</p>
+        <p>Your export respects role-based access (assigned or created bugs only).</p>
         <button className="primary" onClick={downloadCsv}>Export CSV</button>
       </div>
     </div>

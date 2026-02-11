@@ -4,6 +4,11 @@ const { authenticate, authorizeRoles } = require('../middleware/auth')
 
 const router = express.Router()
 
-router.get('/bugs.csv', authenticate, authorizeRoles('Admin', 'Tester'), reportController.exportBugsCsv)
+router.get(
+  '/bugs.csv',
+  authenticate,
+  authorizeRoles('Admin', 'Developer', 'Tester'),
+  reportController.exportBugsCsv
+)
 
 module.exports = router

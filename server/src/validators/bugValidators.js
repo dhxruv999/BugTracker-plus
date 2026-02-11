@@ -14,6 +14,8 @@ const updateBugRules = [
   body('title').optional().trim().isLength({ min: 3 }),
   body('description').optional().isString(),
   body('priority').optional().isIn(BUG_PRIORITIES),
+  body('status').optional().isIn(BUG_STATUSES),
+  body('assignedTo').optional().custom((value) => value === null || value === '' || Number.isInteger(Number(value))),
   body('screenshots').optional().isArray()
 ]
 

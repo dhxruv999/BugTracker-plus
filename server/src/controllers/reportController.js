@@ -3,7 +3,15 @@ const asyncHandler = require('../middleware/asyncHandler')
 const bugModel = require('../models/bugModel')
 
 const exportBugsCsv = asyncHandler(async (req, res) => {
-  const bugs = await bugModel.listBugs({})
+  let bugs = []
+
+  if (req.user.role === 'Admin') {
+    bugs = await bugModel.listBugs({})
+  } else if (req.user.role === 'Developer') {
+    bugs = await bugModel.listBugs({ assignedTo: req.user.id })
+  } else if (req.user.role === 'Tester') {
+    bugs = await bugModel.listBugs({ createdBy: req.user.id })
+  }
   const parser = new Parser({
     fields: [
       'id',

@@ -1,7 +1,35 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const BugTable = ({ bugs, user, developers = [], onAssign, onStatusChange }) => {
   const isAdmin = user?.role === 'Admin'
+  const isDeveloper = user?.role === 'Developer'
+  const isTester = user?.role === 'Tester'
+
+  const getStatusOptions = (bug) => {
+    const all = ['Open', 'In Progress', 'Resolved', 'Closed', 'Reopened']
+
+    if (isAdmin) return all
+
+    if (isDeveloper && bug.assigned_to === user?.id) return all
+
+    if (isTester) {
+      const allowed = ['In Progress', 'Reopened']
+      if (!allowed.includes(bug.status)) {
+        return [bug.status, ...allowed]
+      }
+      return allowed
+    }
+
+    return [bug.status]
+  }
+
+  const canEditStatus = (bug) => {
+    if (isAdmin) return true
+    if (isDeveloper) return bug.assigned_to === user?.id
+    if (isTester) return true
+    return false
+  }
 
   return (
     <div className="table-wrap">
@@ -14,6 +42,7 @@ const BugTable = ({ bugs, user, developers = [], onAssign, onStatusChange }) => 
             <th>Priority</th>
             <th>Assigned</th>
             <th>Updated</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -22,16 +51,17 @@ const BugTable = ({ bugs, user, developers = [], onAssign, onStatusChange }) => 
               <td>#{bug.id}</td>
               <td>{bug.title}</td>
               <td>
-                {user && (user.role !== 'Developer' || bug.assigned_to === user.id) ? (
+                {user && canEditStatus(bug) ? (
                   <select
                     className="inline-select"
                     value={bug.status}
                     onChange={(e) => onStatusChange(bug.id, e.target.value)}
                   >
-                    <option>Open</option>
-                    <option>In Progress</option>
-                    <option>Resolved</option>
-                    <option>Closed</option>
+                    {getStatusOptions(bug).map((option) => (
+                      <option key={option} value={option} disabled={isTester && option === bug.status && !['In Progress', 'Reopened'].includes(option)}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
                 ) : (
                   <span className={`pill status-${bug.status.replace(' ', '-').toLowerCase()}`}>{bug.status}</span>
@@ -55,6 +85,9 @@ const BugTable = ({ bugs, user, developers = [], onAssign, onStatusChange }) => 
                 )}
               </td>
               <td>{new Date(bug.updated_at).toLocaleDateString()}</td>
+              <td>
+                <Link to={`/bugs/${bug.id}`} className="ghost">View</Link>
+              </td>
             </tr>
           ))}
         </tbody>

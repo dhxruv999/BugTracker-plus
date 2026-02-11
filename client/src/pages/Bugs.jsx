@@ -20,17 +20,26 @@ const Bugs = () => {
 
   const fetchBugs = async () => {
     setLoading(true)
+    setError('')
     const params = {}
     if (filters.status) params.status = filters.status
     if (filters.priority) params.priority = filters.priority
     if (filters.assignedTo) params.assignedTo = filters.assignedTo
 
-    const { data } = await api.get('/bugs', { params })
-    setBugs(data)
+    try {
+      const { data } = await api.get('/bugs', { params })
+      setBugs(data)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load bugs')
+    }
     setLoading(false)
   }
 
   const fetchDevelopers = async () => {
+    if (user?.role !== 'Admin') {
+      setDevelopers([])
+      return
+    }
     try {
       const { data } = await api.get('/users', { params: { role: 'Developer' } })
       setDevelopers(data)
@@ -42,7 +51,7 @@ const Bugs = () => {
   useEffect(() => {
     fetchBugs()
     fetchDevelopers()
-  }, [])
+  }, [user?.role])
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -107,50 +116,50 @@ const Bugs = () => {
         </div>
       </div>
 
-      <div className="card">
-        <h3>Create Bug</h3>
-        {error && <div className="alert">{error}</div>}
-        <form className="form-grid" onSubmit={handleCreate}>
-          <label>
-            Title
-            <input name="title" value={form.title} onChange={handleFormChange} required />
-          </label>
-          <label>
-            Priority
-            <select name="priority" value={form.priority} onChange={handleFormChange}>
-              <option>Low</option>
-              <option>Medium</option>
-              <option>High</option>
-              <option>Critical</option>
-            </select>
-          </label>
-          {user?.role === 'Admin' && (
+      {error && <div className="alert">{error}</div>}
+
+      {(user?.role === 'Admin' || user?.role === 'Tester') && (
+        <div className="card">
+          <h3>Create Bug</h3>
+          <form className="form-grid" onSubmit={handleCreate}>
             <label>
-              Assign to
-              <select name="assignedTo" value={form.assignedTo} onChange={handleFormChange}>
-                <option value="">Unassigned</option>
-                {developers.map((dev) => (
-                  <option key={dev.id} value={dev.id}>{dev.name}</option>
-                ))}
+              Title
+              <input name="title" value={form.title} onChange={handleFormChange} required />
+            </label>
+            <label>
+              Priority
+              <select name="priority" value={form.priority} onChange={handleFormChange}>
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+                <option>Critical</option>
               </select>
             </label>
-          )}
-          <label className="full">
-            Description
-            <textarea name="description" value={form.description} onChange={handleFormChange} rows="3" />
-          </label>
-          <label className="full">
-            Screenshot URLs (comma-separated)
-            <input name="screenshots" value={form.screenshots} onChange={handleFormChange} />
-          </label>
-          <div className="actions full">
-            <button className="primary" type="submit">Create Bug</button>
-          </div>
-        </form>
-        {user?.role === 'Developer' && (
-          <p className="hint">As a Developer, you can update status on assigned bugs.</p>
-        )}
-      </div>
+            {user?.role === 'Admin' && (
+              <label>
+                Assign to
+                <select name="assignedTo" value={form.assignedTo} onChange={handleFormChange}>
+                  <option value="">Unassigned</option>
+                  {developers.map((dev) => (
+                    <option key={dev.id} value={dev.id}>{dev.name}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <label className="full">
+              Description
+              <textarea name="description" value={form.description} onChange={handleFormChange} rows="3" />
+            </label>
+            <label className="full">
+              Screenshot URLs (comma-separated)
+              <input name="screenshots" value={form.screenshots} onChange={handleFormChange} />
+            </label>
+            <div className="actions full">
+              <button className="primary" type="submit">Create Bug</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div className="card">
         <h3>Filters</h3>
@@ -163,6 +172,7 @@ const Bugs = () => {
               <option>In Progress</option>
               <option>Resolved</option>
               <option>Closed</option>
+              <option>Reopened</option>
             </select>
           </label>
           <label>
@@ -175,19 +185,21 @@ const Bugs = () => {
               <option>Critical</option>
             </select>
           </label>
-          <label>
-            Assigned Developer
-            {developers.length ? (
-              <select name="assignedTo" value={filters.assignedTo} onChange={handleFilterChange}>
-                <option value="">All</option>
-                {developers.map((dev) => (
-                  <option key={dev.id} value={dev.id}>{dev.name}</option>
-                ))}
-              </select>
-            ) : (
-              <input name="assignedTo" value={filters.assignedTo} onChange={handleFilterChange} placeholder="User ID" />
-            )}
-          </label>
+          {user?.role === 'Admin' && (
+            <label>
+              Assigned Developer
+              {developers.length ? (
+                <select name="assignedTo" value={filters.assignedTo} onChange={handleFilterChange}>
+                  <option value="">All</option>
+                  {developers.map((dev) => (
+                    <option key={dev.id} value={dev.id}>{dev.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <input name="assignedTo" value={filters.assignedTo} onChange={handleFilterChange} placeholder="User ID" />
+              )}
+            </label>
+          )}
           <div className="actions">
             <button className="ghost" type="submit">Apply</button>
           </div>

@@ -13,7 +13,7 @@ const findByEmail = async (email) => {
     `SELECT u.id, u.name, u.email, u.password_hash, r.name AS role
      FROM users u
      JOIN roles r ON u.role_id = r.id
-     WHERE u.email = ?`,
+     WHERE u.email = ? AND u.deleted_at IS NULL`,
     [email]
   )
   return rows[0]
@@ -24,7 +24,7 @@ const findById = async (id) => {
     `SELECT u.id, u.name, u.email, r.name AS role
      FROM users u
      JOIN roles r ON u.role_id = r.id
-     WHERE u.id = ?`,
+     WHERE u.id = ? AND u.deleted_at IS NULL`,
     [id]
   )
   return rows[0]
@@ -50,7 +50,7 @@ const listUsers = async ({ role } = {}) => {
     `SELECT u.id, u.name, r.name AS role
      FROM users u
      JOIN roles r ON u.role_id = r.id
-     ${where}
+     ${where ? `${where} AND u.deleted_at IS NULL` : 'WHERE u.deleted_at IS NULL'}
      ORDER BY u.name`,
     values
   )
@@ -58,10 +58,36 @@ const listUsers = async ({ role } = {}) => {
   return rows
 }
 
+const updateUser = async (id, updates) => {
+  const fields = []
+  const values = []
+
+  Object.entries(updates).forEach(([key, value]) => {
+    fields.push(`${key} = ?`)
+    values.push(value)
+  })
+
+  if (!fields.length) return findById(id)
+
+  values.push(id)
+  await db.execute(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values)
+  return findById(id)
+}
+
+const softDeleteUser = async (id) => {
+  const [result] = await db.execute(
+    'UPDATE users SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL',
+    [id]
+  )
+  return result.affectedRows > 0
+}
+
 module.exports = {
   createUser,
   findByEmail,
   findById,
   findRoleIdByName,
-  listUsers
+  listUsers,
+  updateUser,
+  softDeleteUser
 }

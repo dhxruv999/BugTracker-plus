@@ -34,12 +34,12 @@ const login = asyncHandler(async (req, res) => {
   const user = await findByEmail(email)
 
   if (!user) {
-    return res.status(401).json({ message: 'Invalid credentials' })
+    return res.status(401).json({ message: 'Incorrect email or password' })
   }
 
   const isMatch = await bcrypt.compare(password, user.password_hash)
   if (!isMatch) {
-    return res.status(401).json({ message: 'Invalid credentials' })
+    return res.status(401).json({ message: 'Incorrect email or password' })
   }
 
   const token = jwt.sign(

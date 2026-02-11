@@ -21,7 +21,12 @@ const Login = () => {
       await login(form.email, form.password)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed')
+      const status = err.response?.status
+      if (status === 401) {
+        setError('Incorrect email or password')
+      } else {
+        setError('Unable to sign in. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -31,8 +36,8 @@ const Login = () => {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-brand">BugTracker+</div>
-        <h1>Welcome back</h1>
-        <p>Track and resolve bugs faster with BugTracker+.</p>
+        <p className="auth-tagline">Streamlined issue tracking for fast-moving teams.</p>
+        <h1>Enter your credentials</h1>
         {error && <div className="alert">{error}</div>}
         <form onSubmit={onSubmit}>
           <label>
