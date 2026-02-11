@@ -8,7 +8,14 @@ const TopNav = () => {
 
   if (!user) return null
 
-  const roleLabel = user.role === 'Admin' ? 'Project Admin' : user.role
+  const isAdmin = user.role === 'org_admin' || user.role === 'project_admin'
+  const roleLabelMap = {
+    org_admin: 'Org Admin',
+    project_admin: 'Project Admin',
+    developer: 'Developer',
+    tester: 'Tester'
+  }
+  const roleLabel = roleLabelMap[user.role] || user.role
 
   return (
     <header className="topnav">
@@ -17,6 +24,11 @@ const TopNav = () => {
         <Link className={location.pathname === '/dashboard' ? 'active' : ''} to="/dashboard">Dashboard</Link>
         <Link className={location.pathname === '/bugs' ? 'active' : ''} to="/bugs">Bugs</Link>
         <Link className={location.pathname === '/reports' ? 'active' : ''} to="/reports">Reports</Link>
+        {isAdmin && (
+          <Link className={location.pathname.startsWith('/admin') ? 'active' : ''} to="/admin/users">
+            User Management
+          </Link>
+        )}
       </nav>
       <div className="profile">
         <span>{user.name} · {roleLabel}</span>

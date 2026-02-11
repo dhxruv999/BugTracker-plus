@@ -2,10 +2,44 @@ const asyncHandler = require('../middleware/asyncHandler')
 const bugModel = require('../models/bugModel')
 const { findById } = require('../models/userModel')
 const { BUG_STATUSES, BUG_PRIORITIES } = require('../utils/constants')
-const { canAccessBug } = require('../utils/access')
+
+const isAdminRole = (role) => role === 'org_admin' || role === 'project_admin'
+
+const STATUS_TRANSITIONS = {
+  developer: {
+    Open: ['In Progress'],
+    'In Progress': ['Resolved'],
+    Reopened: ['In Progress']
+  },
+  tester: {
+    Resolved: ['Closed', 'Reopened']
+  }
+}
+
+const canTransitionStatus = (role, currentStatus, nextStatus, bug, userId) => {
+  if (currentStatus === nextStatus) return true
+  if (isAdminRole(role)) return true
+  if (role === 'developer') {
+    if (bug.assigned_to !== userId) return false
+    return STATUS_TRANSITIONS.developer[currentStatus]?.includes(nextStatus)
+  }
+  if (role === 'tester') {
+    return STATUS_TRANSITIONS.tester[currentStatus]?.includes(nextStatus)
+  }
+  return false
+}
 
 const createBug = asyncHandler(async (req, res) => {
   const { title, description, priority, status, assignedTo, screenshots } = req.body
+
+  let normalizedAssignee = null
+  if (isAdminRole(req.user.role) && assignedTo) {
+    const assignee = await findById(Number(assignedTo))
+    if (!assignee || assignee.status !== 'active' || assignee.role !== 'developer') {
+      return res.status(400).json({ message: 'Assignee must be an active developer' })
+    }
+    normalizedAssignee = Number(assignedTo)
+  }
 
   const bug = await bugModel.createBug({
     title,
@@ -13,7 +47,7 @@ const createBug = asyncHandler(async (req, res) => {
     priority: BUG_PRIORITIES.includes(priority) ? priority : 'Medium',
     status: BUG_STATUSES.includes(status) ? status : 'Open',
     createdBy: req.user.id,
-    assignedTo: req.user.role === 'Admin' ? assignedTo : null,
+    assignedTo: normalizedAssignee,
     screenshots
   })
 
@@ -22,24 +56,7 @@ const createBug = asyncHandler(async (req, res) => {
 
 const listBugs = asyncHandler(async (req, res) => {
   const { status, priority, assignedTo } = req.query
-  const filters = { status, priority }
-
-  if (req.user.role === 'Developer') {
-    filters.assignedTo = req.user.id
-    const bugs = await bugModel.listBugs(filters)
-    return res.json(bugs)
-  }
-
-  if (req.user.role === 'Tester') {
-    const bugs = await bugModel.listBugsForTester({ status, priority, userId: req.user.id })
-    return res.json(bugs)
-  }
-
-  if (assignedTo) {
-    filters.assignedTo = assignedTo
-  }
-
-  const bugs = await bugModel.listBugs(filters)
+  const bugs = await bugModel.listBugs({ status, priority, assignedTo })
   res.json(bugs)
 })
 
@@ -47,9 +64,6 @@ const getBug = asyncHandler(async (req, res) => {
   const bug = await bugModel.getBugById(req.params.id)
   if (!bug) {
     return res.status(404).json({ message: 'Bug not found' })
-  }
-  if (!canAccessBug(req.user, bug)) {
-    return res.status(403).json({ message: 'Forbidden' })
   }
   return res.json(bug)
 })
@@ -62,7 +76,7 @@ const updateBug = asyncHandler(async (req, res) => {
 
   const updates = {}
 
-  if (req.user.role === 'Admin') {
+  if (isAdminRole(req.user.role)) {
     if (req.body.title) updates.title = req.body.title
     if (req.body.description !== undefined) updates.description = req.body.description
     if (req.body.priority && BUG_PRIORITIES.includes(req.body.priority)) {
@@ -72,10 +86,18 @@ const updateBug = asyncHandler(async (req, res) => {
       updates.status = req.body.status
     }
     if (req.body.assignedTo !== undefined) {
-      updates.assigned_to = req.body.assignedTo === '' ? null : Number(req.body.assignedTo)
+      if (req.body.assignedTo === '' || req.body.assignedTo === null) {
+        updates.assigned_to = null
+      } else {
+        const assignee = await findById(Number(req.body.assignedTo))
+        if (!assignee || assignee.status !== 'active' || assignee.role !== 'developer') {
+          return res.status(400).json({ message: 'Assignee must be an active developer' })
+        }
+        updates.assigned_to = Number(req.body.assignedTo)
+      }
     }
     if (req.body.screenshots) updates.screenshots = req.body.screenshots
-  } else if (req.user.role === 'Developer') {
+  } else if (req.user.role === 'developer') {
     if (bug.assigned_to !== req.user.id) {
       return res.status(403).json({ message: 'Forbidden' })
     }
@@ -83,6 +105,12 @@ const updateBug = asyncHandler(async (req, res) => {
     if (req.body.priority && BUG_PRIORITIES.includes(req.body.priority)) {
       updates.priority = req.body.priority
     }
+    if (req.body.screenshots) updates.screenshots = req.body.screenshots
+  } else if (req.user.role === 'tester') {
+    if (bug.created_by !== req.user.id) {
+      return res.status(403).json({ message: 'Forbidden' })
+    }
+    if (req.body.description !== undefined) updates.description = req.body.description
     if (req.body.screenshots) updates.screenshots = req.body.screenshots
   } else {
     return res.status(403).json({ message: 'Forbidden' })
@@ -112,8 +140,8 @@ const assignBug = asyncHandler(async (req, res) => {
   const normalized = assignedTo === null || assignedTo === '' ? null : Number(assignedTo)
   if (normalized) {
     const assignee = await findById(normalized)
-    if (!assignee) {
-      return res.status(400).json({ message: 'Assignee not found' })
+    if (!assignee || assignee.status !== 'active' || assignee.role !== 'developer') {
+      return res.status(400).json({ message: 'Assignee must be an active developer' })
     }
   }
   const updated = await bugModel.updateBug(req.params.id, { assigned_to: normalized })
@@ -131,16 +159,8 @@ const updateStatus = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: 'Bug not found' })
   }
 
-  if (req.user.role === 'Developer' && bug.assigned_to !== req.user.id) {
-    return res.status(403).json({ message: 'Only assigned developer can update status' })
-  }
-
-  if (req.user.role === 'Tester' && bug.created_by !== req.user.id && bug.assigned_to !== req.user.id) {
-    return res.status(403).json({ message: 'Only bug creator or assignee can update status' })
-  }
-
-  if (req.user.role === 'Tester' && !['In Progress', 'Reopened'].includes(status)) {
-    return res.status(403).json({ message: 'Tester can only set status to In Progress or Reopened' })
+  if (!canTransitionStatus(req.user.role, bug.status, status, bug, req.user.id)) {
+    return res.status(403).json({ message: 'Status transition not allowed' })
   }
 
   const updated = await bugModel.updateBug(req.params.id, { status })

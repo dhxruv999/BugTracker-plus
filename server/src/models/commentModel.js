@@ -5,7 +5,7 @@ const listComments = async (bugId) => {
     `SELECT c.id, c.bug_id, c.user_id, c.comment, c.created_at, c.updated_at, u.name AS author_name
      FROM bug_comments c
      JOIN users u ON c.user_id = u.id
-     WHERE c.bug_id = ? AND c.deleted_at IS NULL
+     WHERE c.bug_id = ? AND c.is_deleted = FALSE
      ORDER BY c.created_at ASC`,
     [bugId]
   )
@@ -29,7 +29,7 @@ const createComment = async ({ bugId, userId, comment }) => {
 
 const getCommentById = async (id) => {
   const [rows] = await db.execute(
-    'SELECT * FROM bug_comments WHERE id = ? AND deleted_at IS NULL',
+    'SELECT * FROM bug_comments WHERE id = ? AND is_deleted = FALSE',
     [id]
   )
   return rows[0]
@@ -37,7 +37,7 @@ const getCommentById = async (id) => {
 
 const softDeleteComment = async (id) => {
   const [result] = await db.execute(
-    'UPDATE bug_comments SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL',
+    'UPDATE bug_comments SET is_deleted = TRUE WHERE id = ? AND is_deleted = FALSE',
     [id]
   )
   return result.affectedRows > 0

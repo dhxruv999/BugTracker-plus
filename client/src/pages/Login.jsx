@@ -24,6 +24,8 @@ const Login = () => {
       const status = err.response?.status
       if (status === 401) {
         setError('Incorrect email or password')
+      } else if (status === 403) {
+        setError(err.response?.data?.message || 'Account pending approval')
       } else {
         setError('Unable to sign in. Please try again.')
       }
@@ -36,8 +38,8 @@ const Login = () => {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-brand">BugTracker+</div>
-        <p className="auth-tagline">Streamlined issue tracking for fast-moving teams.</p>
         <h1>Enter your credentials</h1>
+        <p className="auth-tagline">Streamlined issue tracking for fast-moving teams.</p>
         {error && <div className="alert">{error}</div>}
         <form onSubmit={onSubmit}>
           <label>

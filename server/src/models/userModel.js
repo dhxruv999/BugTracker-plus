@@ -1,19 +1,23 @@
 const db = require('../config/db')
 
-const createUser = async ({ name, email, passwordHash, roleId }) => {
+const createUser = async ({ name, email, passwordHash, role = null, status = 'pending' }) => {
   const [result] = await db.execute(
-    'INSERT INTO users (name, email, password_hash, role_id) VALUES (?, ?, ?, ?)',
-    [name, email, passwordHash, roleId]
+    'INSERT INTO users (name, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?)',
+    [name, email, passwordHash, role, status]
   )
-  return { id: result.insertId, name, email, roleId }
+  return { id: result.insertId, name, email, role, status }
+}
+
+const countUsers = async () => {
+  const [rows] = await db.execute('SELECT COUNT(*) AS total FROM users WHERE is_deleted = FALSE')
+  return rows[0]?.total || 0
 }
 
 const findByEmail = async (email) => {
   const [rows] = await db.execute(
-    `SELECT u.id, u.name, u.email, u.password_hash, r.name AS role
-     FROM users u
-     JOIN roles r ON u.role_id = r.id
-     WHERE u.email = ? AND u.deleted_at IS NULL`,
+    `SELECT id, name, email, password_hash, role, status, password_reset_requested
+     FROM users
+     WHERE email = ? AND is_deleted = FALSE`,
     [email]
   )
   return rows[0]
@@ -21,40 +25,53 @@ const findByEmail = async (email) => {
 
 const findById = async (id) => {
   const [rows] = await db.execute(
-    `SELECT u.id, u.name, u.email, r.name AS role
-     FROM users u
-     JOIN roles r ON u.role_id = r.id
-     WHERE u.id = ? AND u.deleted_at IS NULL`,
+    `SELECT id, name, email, role, status, password_reset_requested
+     FROM users
+     WHERE id = ? AND is_deleted = FALSE`,
     [id]
   )
   return rows[0]
 }
 
-const findRoleIdByName = async (roleName) => {
-  const [rows] = await db.execute('SELECT id FROM roles WHERE name = ?', [roleName])
-  return rows[0]?.id
-}
-
-const listUsers = async ({ role } = {}) => {
-  const clauses = []
+const listUsers = async ({ role, status, passwordResetRequested } = {}) => {
+  const clauses = ['is_deleted = FALSE']
   const values = []
 
   if (role) {
-    clauses.push('r.name = ?')
+    clauses.push('role = ?')
     values.push(role)
+  }
+
+  if (status) {
+    clauses.push('status = ?')
+    values.push(status)
+  }
+
+  if (passwordResetRequested !== undefined) {
+    clauses.push('password_reset_requested = ?')
+    values.push(passwordResetRequested)
   }
 
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''
 
   const [rows] = await db.execute(
-    `SELECT u.id, u.name, r.name AS role
-     FROM users u
-     JOIN roles r ON u.role_id = r.id
-     ${where ? `${where} AND u.deleted_at IS NULL` : 'WHERE u.deleted_at IS NULL'}
-     ORDER BY u.name`,
+    `SELECT id, name, email, role, status, password_reset_requested
+     FROM users
+     ${where}
+     ORDER BY created_at DESC`,
     values
   )
 
+  return rows
+}
+
+const listActiveDevelopers = async () => {
+  const [rows] = await db.execute(
+    `SELECT id, name, role
+     FROM users
+     WHERE role = 'developer' AND status = 'active' AND is_deleted = FALSE
+     ORDER BY name`
+  )
   return rows
 }
 
@@ -76,7 +93,7 @@ const updateUser = async (id, updates) => {
 
 const softDeleteUser = async (id) => {
   const [result] = await db.execute(
-    'UPDATE users SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL',
+    'UPDATE users SET is_deleted = TRUE WHERE id = ? AND is_deleted = FALSE',
     [id]
   )
   return result.affectedRows > 0
@@ -84,10 +101,11 @@ const softDeleteUser = async (id) => {
 
 module.exports = {
   createUser,
+  countUsers,
   findByEmail,
   findById,
-  findRoleIdByName,
   listUsers,
   updateUser,
-  softDeleteUser
+  softDeleteUser,
+  listActiveDevelopers
 }

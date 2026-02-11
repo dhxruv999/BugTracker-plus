@@ -7,7 +7,7 @@ const router = express.Router()
 router.get(
   '/bugs.csv',
   authenticate,
-  authorizeRoles('Admin', 'Developer', 'Tester'),
+  authorizeRoles('org_admin', 'project_admin', 'developer', 'tester'),
   reportController.exportBugsCsv
 )
 

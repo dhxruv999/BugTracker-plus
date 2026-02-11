@@ -6,7 +6,7 @@ import BugTable from '../components/BugTable'
 const Bugs = () => {
   const { user } = useAuth()
   const [bugs, setBugs] = useState([])
-  const [developers, setDevelopers] = useState([])
+  const [assignees, setAssignees] = useState([])
   const [filters, setFilters] = useState({ status: '', priority: '', assignedTo: '' })
   const [form, setForm] = useState({
     title: '',
@@ -35,22 +35,21 @@ const Bugs = () => {
     setLoading(false)
   }
 
-  const fetchDevelopers = async () => {
-    if (user?.role !== 'Admin') {
-      setDevelopers([])
-      return
-    }
+  const isAdminRole = user?.role === 'org_admin' || user?.role === 'project_admin'
+  const isTesterRole = user?.role === 'tester'
+
+  const fetchAssignees = async () => {
     try {
-      const { data } = await api.get('/users', { params: { role: 'Developer' } })
-      setDevelopers(data)
+      const { data } = await api.get('/users/assignees')
+      setAssignees(data)
     } catch (err) {
-      setDevelopers([])
+      setAssignees([])
     }
   }
 
   useEffect(() => {
     fetchBugs()
-    fetchDevelopers()
+    fetchAssignees()
   }, [user?.role])
 
   const handleFilterChange = (e) => {
@@ -78,7 +77,7 @@ const Bugs = () => {
           ? form.screenshots.split(',').map((item) => item.trim()).filter(Boolean)
           : []
       }
-      if (user?.role === 'Admin' && form.assignedTo) {
+      if (isAdminRole && form.assignedTo) {
         payload.assignedTo = Number(form.assignedTo)
       }
       await api.post('/bugs', payload)
@@ -118,7 +117,7 @@ const Bugs = () => {
 
       {error && <div className="alert">{error}</div>}
 
-      {(user?.role === 'Admin' || user?.role === 'Tester') && (
+      {(isAdminRole || isTesterRole) && (
         <div className="card">
           <h3>Create Bug</h3>
           <form className="form-grid" onSubmit={handleCreate}>
@@ -135,13 +134,13 @@ const Bugs = () => {
                 <option>Critical</option>
               </select>
             </label>
-            {user?.role === 'Admin' && (
+            {isAdminRole && (
               <label>
                 Assign to
                 <select name="assignedTo" value={form.assignedTo} onChange={handleFormChange}>
                   <option value="">Unassigned</option>
-                  {developers.map((dev) => (
-                    <option key={dev.id} value={dev.id}>{dev.name}</option>
+                  {assignees.map((person) => (
+                    <option key={person.id} value={person.id}>{person.name}</option>
                   ))}
                 </select>
               </label>
@@ -185,21 +184,19 @@ const Bugs = () => {
               <option>Critical</option>
             </select>
           </label>
-          {user?.role === 'Admin' && (
-            <label>
-              Assigned Developer
-              {developers.length ? (
-                <select name="assignedTo" value={filters.assignedTo} onChange={handleFilterChange}>
-                  <option value="">All</option>
-                  {developers.map((dev) => (
-                    <option key={dev.id} value={dev.id}>{dev.name}</option>
-                  ))}
-                </select>
+          <label>
+            Assigned Developer
+            <select name="assignedTo" value={filters.assignedTo} onChange={handleFilterChange}>
+              <option value="">All</option>
+              {assignees.length ? (
+                assignees.map((person) => (
+                  <option key={person.id} value={person.id}>{person.name}</option>
+                ))
               ) : (
-                <input name="assignedTo" value={filters.assignedTo} onChange={handleFilterChange} placeholder="User ID" />
+                <option value="" disabled>No active developers</option>
               )}
-            </label>
-          )}
+            </select>
+          </label>
           <div className="actions">
             <button className="ghost" type="submit">Apply</button>
           </div>
@@ -214,7 +211,7 @@ const Bugs = () => {
           <BugTable
             bugs={bugs}
             user={user}
-            developers={developers}
+            developers={assignees}
             onAssign={handleAssign}
             onStatusChange={handleStatusChange}
           />

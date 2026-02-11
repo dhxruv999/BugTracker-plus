@@ -20,7 +20,7 @@ router.get('/:id', bugController.getBug)
 
 router.post(
   '/',
-  authorizeRoles('Admin', 'Tester'),
+  authorizeRoles('org_admin', 'project_admin', 'tester'),
   createBugRules,
   validateRequest,
   bugController.createBug
@@ -28,17 +28,17 @@ router.post(
 
 router.put(
   '/:id',
-  authorizeRoles('Admin', 'Developer'),
+  authorizeRoles('org_admin', 'project_admin', 'developer', 'tester'),
   updateBugRules,
   validateRequest,
   bugController.updateBug
 )
 
-router.delete('/:id', authorizeRoles('Admin'), bugController.deleteBug)
+router.delete('/:id', authorizeRoles('org_admin'), bugController.deleteBug)
 
 router.patch(
   '/:id/assign',
-  authorizeRoles('Admin'),
+  authorizeRoles('org_admin', 'project_admin'),
   assignBugRules,
   validateRequest,
   bugController.assignBug
@@ -46,7 +46,7 @@ router.patch(
 
 router.patch(
   '/:id/status',
-  authorizeRoles('Admin', 'Developer', 'Tester'),
+  authorizeRoles('org_admin', 'project_admin', 'developer', 'tester'),
   updateStatusRules,
   validateRequest,
   bugController.updateStatus

@@ -5,13 +5,14 @@ const bugModel = require('../models/bugModel')
 const exportBugsCsv = asyncHandler(async (req, res) => {
   let bugs = []
 
-  if (req.user.role === 'Admin') {
+  if (req.user.role === 'org_admin' || req.user.role === 'project_admin') {
     bugs = await bugModel.listBugs({})
-  } else if (req.user.role === 'Developer') {
+  } else if (req.user.role === 'developer') {
     bugs = await bugModel.listBugs({ assignedTo: req.user.id })
-  } else if (req.user.role === 'Tester') {
+  } else if (req.user.role === 'tester') {
     bugs = await bugModel.listBugs({ createdBy: req.user.id })
   }
+
   const parser = new Parser({
     fields: [
       'id',

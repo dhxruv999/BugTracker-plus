@@ -26,7 +26,7 @@ const createBug = async ({
 }) => {
   const [result] = await db.execute(
     `INSERT INTO bugs (title, description, status, priority, created_by, assigned_to, screenshots)
-     VALUES (?, ?, ?, ?, ?, ?, ?)` ,
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       title,
       description || null,
@@ -47,17 +47,15 @@ const getBugById = async (id) => {
      FROM bugs b
      JOIN users creator ON b.created_by = creator.id
      LEFT JOIN users assignee ON b.assigned_to = assignee.id
-     WHERE b.id = ? AND b.deleted_at IS NULL`,
+     WHERE b.id = ? AND b.is_deleted = FALSE`,
     [id]
   )
   return rows[0] ? mapBugRow(rows[0]) : null
 }
 
-const listBugs = async ({ status, priority, assignedTo, createdBy }) => {
-  const clauses = []
+const listBugs = async ({ status, priority, assignedTo, createdBy } = {}) => {
+  const clauses = ['b.is_deleted = FALSE']
   const values = []
-
-  clauses.push('b.deleted_at IS NULL')
 
   if (status) {
     clauses.push('b.status = ?')
@@ -94,35 +92,6 @@ const listBugs = async ({ status, priority, assignedTo, createdBy }) => {
   return rows.map(mapBugRow)
 }
 
-const listBugsForTester = async ({ status, priority, userId }) => {
-  const clauses = ['b.deleted_at IS NULL', '(b.created_by = ? OR b.assigned_to = ?)']
-  const values = [userId, userId]
-
-  if (status) {
-    clauses.push('b.status = ?')
-    values.push(status)
-  }
-
-  if (priority) {
-    clauses.push('b.priority = ?')
-    values.push(priority)
-  }
-
-  const where = `WHERE ${clauses.join(' AND ')}`
-
-  const [rows] = await db.execute(
-    `SELECT b.*, creator.name AS created_by_name, assignee.name AS assigned_to_name
-     FROM bugs b
-     JOIN users creator ON b.created_by = creator.id
-     LEFT JOIN users assignee ON b.assigned_to = assignee.id
-     ${where}
-     ORDER BY b.created_at DESC`,
-    values
-  )
-
-  return rows.map(mapBugRow)
-}
-
 const updateBug = async (id, updates) => {
   const fields = []
   const values = []
@@ -145,27 +114,27 @@ const updateBug = async (id, updates) => {
 
 const deleteBug = async (id) => {
   const [result] = await db.execute(
-    'UPDATE bugs SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL',
+    'UPDATE bugs SET is_deleted = TRUE WHERE id = ? AND is_deleted = FALSE',
     [id]
   )
   return result.affectedRows > 0
 }
 
 const countAll = async () => {
-  const [rows] = await db.execute('SELECT COUNT(*) AS total FROM bugs WHERE deleted_at IS NULL')
+  const [rows] = await db.execute('SELECT COUNT(*) AS total FROM bugs WHERE is_deleted = FALSE')
   return rows[0]?.total || 0
 }
 
 const countByStatus = async () => {
   const [rows] = await db.execute(
-    'SELECT status, COUNT(*) AS count FROM bugs WHERE deleted_at IS NULL GROUP BY status'
+    'SELECT status, COUNT(*) AS count FROM bugs WHERE is_deleted = FALSE GROUP BY status'
   )
   return rows
 }
 
 const countByPriority = async () => {
   const [rows] = await db.execute(
-    'SELECT priority, COUNT(*) AS count FROM bugs WHERE deleted_at IS NULL GROUP BY priority'
+    'SELECT priority, COUNT(*) AS count FROM bugs WHERE is_deleted = FALSE GROUP BY priority'
   )
   return rows
 }
@@ -175,7 +144,7 @@ const countByAssignee = async () => {
     `SELECT u.name AS assignee, COUNT(*) AS count
      FROM bugs b
      LEFT JOIN users u ON b.assigned_to = u.id
-     WHERE b.deleted_at IS NULL
+     WHERE b.is_deleted = FALSE
      GROUP BY b.assigned_to`
   )
   return rows
@@ -185,7 +154,6 @@ module.exports = {
   createBug,
   getBugById,
   listBugs,
-  listBugsForTester,
   updateBug,
   deleteBug,
   countAll,

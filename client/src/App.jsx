@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import Bugs from './pages/Bugs'
 import BugDetails from './pages/BugDetails'
 import Reports from './pages/Reports'
+import AdminUsers from './pages/AdminUsers'
 import Unauthorized from './pages/Unauthorized'
 
 const App = () => {
@@ -50,6 +51,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <Reports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute roles={['org_admin', 'project_admin']}>
+              <AdminUsers />
             </ProtectedRoute>
           }
         />

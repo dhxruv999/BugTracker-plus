@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 const Register = () => {
   const { register } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'Tester' })
+  const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -18,8 +18,12 @@ const Register = () => {
     setError('')
     setLoading(true)
     try {
-      await register(form)
-      navigate('/login')
+      const result = await register(form)
+      if (result?.status === 'pending') {
+        navigate('/login')
+      } else {
+        navigate('/login')
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed')
     } finally {
@@ -30,8 +34,9 @@ const Register = () => {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <div className="auth-brand">BugTracker+</div>
         <h1>Create account</h1>
-        <p>Pick a role to get the right tools and permissions.</p>
+        <p className="auth-tagline">Your account will be reviewed by a Project Admin or Org Admin.</p>
         {error && <div className="alert">{error}</div>}
         <form onSubmit={onSubmit}>
           <label>
@@ -46,26 +51,10 @@ const Register = () => {
             Password
             <input name="password" type="password" value={form.password} onChange={onChange} required />
           </label>
-          <label>
-            Role
-            <select name="role" value={form.role} onChange={onChange}>
-              <option value="Admin">Project Admin</option>
-              <option value="Developer">Developer</option>
-              <option value="Tester">Tester</option>
-            </select>
-          </label>
           <button type="submit" className="primary" disabled={loading}>
             {loading ? 'Creating...' : 'Create account'}
           </button>
         </form>
-        <div className="role-guide">
-          <h4>Roles & responsibilities</h4>
-          <ul>
-            <li><strong>Project Admin:</strong> Manage project settings & users</li>
-            <li><strong>Developer:</strong> Work on & update issues</li>
-            <li><strong>Tester:</strong> Create issues</li>
-          </ul>
-        </div>
         <div className="hint">
           Already have an account? <Link to="/login">Sign in</Link>
         </div>

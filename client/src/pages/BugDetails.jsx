@@ -100,7 +100,7 @@ const BugDetails = () => {
                 <span>{new Date(item.created_at).toLocaleString()}</span>
               </div>
               <p>{item.comment}</p>
-              {(user?.role === 'Admin' || user?.id === item.user_id) && (
+              {((user?.role === 'org_admin' || user?.role === 'project_admin') || user?.id === item.user_id) && (
                 <button className="ghost" onClick={() => removeComment(item.id)}>Delete</button>
               )}
             </div>
