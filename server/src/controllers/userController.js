@@ -37,6 +37,28 @@ const getAssignees = asyncHandler(async (req, res) => {
   res.json(developers)
 })
 
+const updateSelf = asyncHandler(async (req, res) => {
+  const updates = {}
+
+  if (req.body.name) updates.name = req.body.name
+
+  if (req.body.email) {
+    const existing = await findByEmail(req.body.email)
+    if (existing && existing.id !== req.user.id) {
+      return res.status(409).json({ message: 'Email already registered' })
+    }
+    updates.email = req.body.email
+  }
+
+  if (!Object.keys(updates).length) {
+    const user = await findById(req.user.id)
+    return res.json(user)
+  }
+
+  const updated = await updateUser(req.user.id, updates)
+  return res.json(updated)
+})
+
 const updateUserById = asyncHandler(async (req, res) => {
   const user = await findById(req.params.id)
   if (!user) {
@@ -257,6 +279,7 @@ const orgAdminResetPassword = asyncHandler(async (req, res) => {
 module.exports = {
   getUsers,
   getAssignees,
+  updateSelf,
   updateUserById,
   deleteUserById,
   approveUser,

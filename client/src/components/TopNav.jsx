@@ -31,7 +31,7 @@ const TopNav = () => {
         )}
       </nav>
       <div className="profile">
-        <span>{user.name} · {roleLabel}</span>
+        <Link className="profile-link" to="/account">{user.name} · {roleLabel}</Link>
         <button className="ghost" onClick={logout}>Sign out</button>
       </div>
     </header>

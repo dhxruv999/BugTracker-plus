@@ -2,6 +2,7 @@ const express = require('express')
 const {
   getUsers,
   getAssignees,
+  updateSelf,
   updateUserById,
   deleteUserById,
   approveUser,
@@ -16,6 +17,7 @@ const { authenticate, authorizeRoles } = require('../middleware/auth')
 const validateRequest = require('../middleware/validate')
 const {
   updateUserRules,
+  updateSelfRules,
   approveUserRules,
   changeRoleRules,
   changePasswordRules,
@@ -28,6 +30,7 @@ const router = express.Router()
 
 router.use(authenticate)
 
+router.put('/me', updateSelfRules, validateRequest, updateSelf)
 router.put('/change-password', changePasswordRules, validateRequest, changePassword)
 router.post('/request-password-reset', requestPasswordResetRules, validateRequest, requestPasswordReset)
 router.put('/admin-reset-password', authorizeRoles('project_admin'), adminResetPasswordRules, validateRequest, adminResetPassword)

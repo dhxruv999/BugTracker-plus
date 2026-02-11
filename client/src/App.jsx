@@ -10,6 +10,7 @@ import Bugs from './pages/Bugs'
 import BugDetails from './pages/BugDetails'
 import Reports from './pages/Reports'
 import AdminUsers from './pages/AdminUsers'
+import Account from './pages/Account'
 import Unauthorized from './pages/Unauthorized'
 
 const App = () => {
@@ -51,6 +52,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <Reports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <Account />
             </ProtectedRoute>
           }
         />

@@ -6,6 +6,11 @@ const updateUserRules = [
   body('email').optional().isEmail()
 ]
 
+const updateSelfRules = [
+  body('name').optional().trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
+  body('email').optional().isEmail().withMessage('Valid email required')
+]
+
 const approveUserRules = [
   body('role').isIn(ROLES).withMessage('Valid role required')
 ]
@@ -36,6 +41,7 @@ const orgAdminResetPasswordRules = [
 
 module.exports = {
   updateUserRules,
+  updateSelfRules,
   approveUserRules,
   changeRoleRules,
   changePasswordRules,
