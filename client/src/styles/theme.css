@@ -305,6 +305,18 @@ button.primary {
   color: #1b1b1b;
 }
 
+a.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1b1b1b;
+  font-weight: 600;
+  transition: transform 0.2s ease, filter 0.2s ease, background 0.2s ease;
+}
+
 button.ghost {
   background: transparent;
   color: var(--text);
@@ -312,6 +324,11 @@ button.ghost {
 }
 
 button.primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+a.primary:hover {
   filter: brightness(1.05);
   transform: translateY(-1px);
 }
@@ -383,6 +400,11 @@ a.ghost {
   display: grid;
   place-items: center;
   padding: 2rem;
+}
+
+.auth-page.with-nav {
+  min-height: calc(100vh - 90px);
+  padding-top: 3rem;
 }
 
 .auth-card {
@@ -474,6 +496,427 @@ a.ghost {
 
 .comment p {
   margin: 0.5rem 0 0;
+}
+
+.landing-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(76, 201, 240, 0.15), transparent 55%),
+    radial-gradient(circle at 80% 10%, rgba(247, 127, 0, 0.15), transparent 45%),
+    radial-gradient(circle at 70% 80%, rgba(239, 71, 111, 0.12), transparent 55%);
+}
+
+.landing-nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  padding: 1.5rem 3rem;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(7, 12, 22, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-nav .brand {
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+  justify-self: start;
+  color: var(--text);
+}
+
+.landing-nav .brand span {
+  color: var(--accent);
+  margin-left: 0.35rem;
+}
+
+.landing-nav nav {
+  display: flex;
+  gap: 1.5rem;
+  justify-self: center;
+}
+
+.landing-nav nav a {
+  color: var(--muted);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.landing-nav nav a:hover {
+  color: var(--text);
+}
+
+.landing-nav .actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-self: end;
+}
+
+.nav-placeholder {
+  justify-self: center;
+}
+
+.hero {
+  position: relative;
+  padding: 5rem 3rem 4rem;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.hero-copy .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent-2);
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.hero-copy h1 {
+  font-size: clamp(2.5rem, 4vw, 3.8rem);
+  margin: 0 0 1.2rem;
+}
+
+.hero-copy .lead {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  color: var(--muted);
+}
+
+.hero-stats h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.hero-card {
+  background: rgba(24, 36, 61, 0.85);
+  border-radius: 20px;
+  padding: 1.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  justify-content: space-between;
+}
+
+.hero-card-header .tag {
+  background: rgba(76, 201, 240, 0.2);
+  color: var(--accent-2);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.7rem;
+}
+
+.pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #4cc9f0;
+  box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.8);
+  animation: pulse 2s infinite;
+}
+
+.hero-card-body {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.metric span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.metric-row strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 0.4rem;
+}
+
+.bar .fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f77f00, #ffd166);
+  border-radius: 999px;
+  animation: slide 2s ease;
+}
+
+.bar .fill.alt {
+  background: linear-gradient(90deg, #4cc9f0, #4361ee);
+}
+
+.bar .fill.warn {
+  background: linear-gradient(90deg, #ef476f, #ff758f);
+}
+
+.landing-footer {
+  padding: 2rem 3rem 3rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hero-card-footer {
+  margin-top: 1.6rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hero-orbits .orbit {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  animation: float 12s linear infinite;
+}
+
+.hero-orbits .dot-1 {
+  width: 120px;
+  height: 120px;
+  top: 5%;
+  left: 60%;
+}
+
+.hero-orbits .dot-2 {
+  width: 220px;
+  height: 220px;
+  top: 30%;
+  right: 5%;
+  animation-duration: 18s;
+}
+
+.hero-orbits .dot-3 {
+  width: 160px;
+  height: 160px;
+  bottom: 5%;
+  left: 10%;
+  animation-duration: 15s;
+}
+
+.section {
+  padding: 4rem 3rem;
+  scroll-margin-top: 120px;
+}
+
+.section-title h2 {
+  margin: 0 0 0.6rem;
+  font-size: 2rem;
+}
+
+.section-title p {
+  color: var(--muted);
+  max-width: 560px;
+}
+
+.feature-grid,
+.workflow-grid,
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.feature-card,
+.workflow-card,
+.report-card {
+  background: rgba(24, 36, 61, 0.7);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover,
+.workflow-card:hover,
+.report-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.workflow {
+  background: rgba(9, 14, 26, 0.6);
+}
+
+.role-section {
+  background: rgba(10, 16, 30, 0.6);
+}
+
+.role-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+
+.role-switch button {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.role-switch button.active {
+  background: rgba(247, 127, 0, 0.2);
+  color: var(--text);
+  border-color: rgba(247, 127, 0, 0.6);
+}
+
+.role-panel {
+  margin-top: 2rem;
+  background: rgba(24, 36, 61, 0.85);
+  border-radius: 18px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.role-subtitle {
+  color: var(--muted);
+  margin: 0.4rem 0 1.5rem;
+}
+
+.role-points {
+  display: grid;
+  gap: 1rem;
+}
+
+.role-point {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.role-point .dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-2);
+  border-radius: 50%;
+  margin-top: 0.4rem;
+}
+
+.report-card .stack {
+  display: flex;
+  gap: 0.4rem;
+  margin: 1rem 0;
+}
+
+.report-card .stack span {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4cc9f0, #f77f00);
+}
+
+.report-card .heat {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  margin: 1rem 0;
+}
+
+.report-card .heat span {
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(239, 71, 111, 0.3), rgba(239, 71, 111, 0.8));
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.8);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(76, 201, 240, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 201, 240, 0);
+  }
+}
+
+@keyframes slide {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .landing-nav {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .landing-nav nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .landing-nav .actions,
+  .nav-placeholder {
+    justify-self: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero {
+    padding: 4rem 1.5rem;
+  }
+
+  .section,
+  .cta {
+    padding: 3rem 1.5rem;
+  }
 }
 
 .role-guide {

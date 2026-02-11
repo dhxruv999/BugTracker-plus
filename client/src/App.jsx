@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './contexts/AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Bugs from './pages/Bugs'
 import BugDetails from './pages/BugDetails'
@@ -20,7 +21,7 @@ const App = () => {
     <div className="app">
       <TopNav />
       <Routes>
-        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
+        <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route

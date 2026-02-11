@@ -23,11 +23,13 @@ CREATE TABLE bugs (
   screenshots JSON NULL,
   created_by INT NOT NULL,
   assigned_to INT NULL,
+  assigned_by INT NULL,
   is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (created_by) REFERENCES users(id),
   FOREIGN KEY (assigned_to) REFERENCES users(id),
+  FOREIGN KEY (assigned_by) REFERENCES users(id),
   INDEX idx_status (status),
   INDEX idx_priority (priority),
   INDEX idx_assigned (assigned_to)

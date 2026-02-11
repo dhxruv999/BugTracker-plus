@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../services/api'
+import PublicNav from '../components/PublicNav'
 
 const Login = () => {
   const { login } = useAuth()
@@ -101,8 +102,10 @@ const Login = () => {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
+    <>
+      <PublicNav />
+      <div className="auth-page with-nav">
+        <div className="auth-card">
         <div className="auth-brand">BugTracker+</div>
         <h1>Enter your credentials</h1>
         {error && <div className="alert">{error}</div>}
@@ -174,8 +177,9 @@ const Login = () => {
         <div className="hint">
           New here? <Link to="/register">Create an account</Link>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

@@ -1,6 +1,15 @@
 const bcrypt = require('bcrypt')
 const asyncHandler = require('../middleware/asyncHandler')
-const { listUsers, updateUser, softDeleteUser, findById, findByEmail, listActiveDevelopers, countPendingUsers } = require('../models/userModel')
+const {
+  listUsers,
+  updateUser,
+  softDeleteUser,
+  findById,
+  findByEmail,
+  listActiveDevelopers,
+  countPendingUsers,
+  countResetRequestsByRoles
+} = require('../models/userModel')
 const { ROLES, ROLE_RANK } = require('../utils/constants')
 
 const isAdminRole = (role) => role === 'org_admin' || role === 'project_admin'
@@ -35,6 +44,18 @@ const getUsers = asyncHandler(async (req, res) => {
 const getPendingCount = asyncHandler(async (req, res) => {
   const total = await countPendingUsers()
   res.json({ count: total })
+})
+
+const getAlertsCount = asyncHandler(async (req, res) => {
+  const pending = await countPendingUsers()
+  let roles = []
+  if (req.user.role === 'org_admin') {
+    roles = ['project_admin', 'developer', 'tester']
+  } else if (req.user.role === 'project_admin') {
+    roles = ['developer', 'tester']
+  }
+  const reset = await countResetRequestsByRoles(roles)
+  res.json({ pending, reset, total: pending + reset })
 })
 
 const getAssignees = asyncHandler(async (req, res) => {
@@ -145,7 +166,7 @@ const rejectUser = asyncHandler(async (req, res) => {
     return res.status(403).json({ message: 'Cannot reject yourself' })
   }
 
-  if (req.user.role !== 'org_admin') {
+  if (!isAdminRole(req.user.role)) {
     return res.status(403).json({ message: 'Forbidden' })
   }
 
@@ -281,9 +302,36 @@ const orgAdminResetPassword = asyncHandler(async (req, res) => {
   return res.json({ success: true })
 })
 
+const rejectPasswordReset = asyncHandler(async (req, res) => {
+  if (!isAdminRole(req.user.role)) {
+    return res.status(403).json({ message: 'Forbidden' })
+  }
+
+  const targetUser = await findById(req.params.id)
+  if (!targetUser) {
+    return res.status(404).json({ message: 'User not found' })
+  }
+
+  if (!targetUser.password_reset_requested) {
+    return res.status(400).json({ message: 'No password reset requested' })
+  }
+
+  if (req.user.role === 'project_admin' && !['developer', 'tester'].includes(targetUser.role)) {
+    return res.status(403).json({ message: 'Target role not allowed' })
+  }
+
+  if (req.user.role === 'org_admin' && !['project_admin', 'developer', 'tester'].includes(targetUser.role)) {
+    return res.status(403).json({ message: 'Target role not allowed' })
+  }
+
+  await updateUser(targetUser.id, { password_reset_requested: false })
+  return res.json({ success: true })
+})
+
 module.exports = {
   getUsers,
   getPendingCount,
+  getAlertsCount,
   getAssignees,
   updateSelf,
   updateUserById,
@@ -294,5 +342,6 @@ module.exports = {
   changePassword,
   requestPasswordReset,
   adminResetPassword,
-  orgAdminResetPassword
+  orgAdminResetPassword,
+  rejectPasswordReset
 }

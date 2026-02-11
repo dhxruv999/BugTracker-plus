@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import PublicNav from '../components/PublicNav'
 
 const Register = () => {
   const { register } = useAuth()
@@ -34,8 +35,10 @@ const Register = () => {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
+    <>
+      <PublicNav />
+      <div className="auth-page with-nav">
+        <div className="auth-card">
         <div className="auth-brand">BugTracker+</div>
         <h1>Create account</h1>
         <p className="auth-tagline">Your account will be reviewed by a Project Admin or Org Admin.</p>
@@ -71,8 +74,9 @@ const Register = () => {
         <div className="hint">
           Already have an account? <Link to="/login">Sign in</Link>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

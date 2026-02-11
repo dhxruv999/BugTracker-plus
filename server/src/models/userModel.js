@@ -84,6 +84,20 @@ const countPendingUsers = async () => {
   return rows[0]?.total || 0
 }
 
+const countResetRequestsByRoles = async (roles = []) => {
+  if (!roles.length) return 0
+  const placeholders = roles.map(() => '?').join(', ')
+  const [rows] = await db.execute(
+    `SELECT COUNT(*) AS total
+     FROM users
+     WHERE password_reset_requested = TRUE
+       AND is_deleted = FALSE
+       AND role IN (${placeholders})`,
+    roles
+  )
+  return rows[0]?.total || 0
+}
+
 const updateUser = async (id, updates) => {
   const fields = []
   const values = []
@@ -117,5 +131,6 @@ module.exports = {
   updateUser,
   softDeleteUser,
   listActiveDevelopers,
-  countPendingUsers
+  countPendingUsers,
+  countResetRequestsByRoles
 }

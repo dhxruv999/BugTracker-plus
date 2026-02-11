@@ -22,11 +22,12 @@ const createBug = async ({
   priority,
   createdBy,
   assignedTo,
+  assignedBy,
   screenshots
 }) => {
   const [result] = await db.execute(
-    `INSERT INTO bugs (title, description, status, priority, created_by, assigned_to, screenshots)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO bugs (title, description, status, priority, created_by, assigned_to, assigned_by, screenshots)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       title,
       description || null,
@@ -34,6 +35,7 @@ const createBug = async ({
       priority || 'Medium',
       createdBy,
       assignedTo || null,
+      assignedBy || null,
       JSON.stringify(screenshots || [])
     ]
   )
@@ -43,10 +45,14 @@ const createBug = async ({
 
 const getBugById = async (id) => {
   const [rows] = await db.execute(
-    `SELECT b.*, creator.name AS created_by_name, assignee.name AS assigned_to_name
+    `SELECT b.*,
+      creator.name AS created_by_name,
+      assignee.name AS assigned_to_name,
+      assigner.name AS assigned_by_name
      FROM bugs b
      JOIN users creator ON b.created_by = creator.id
      LEFT JOIN users assignee ON b.assigned_to = assignee.id
+     LEFT JOIN users assigner ON b.assigned_by = assigner.id
      WHERE b.id = ? AND b.is_deleted = FALSE`,
     [id]
   )
@@ -80,10 +86,14 @@ const listBugs = async ({ status, priority, assignedTo, createdBy } = {}) => {
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''
 
   const [rows] = await db.execute(
-    `SELECT b.*, creator.name AS created_by_name, assignee.name AS assigned_to_name
+    `SELECT b.*,
+      creator.name AS created_by_name,
+      assignee.name AS assigned_to_name,
+      assigner.name AS assigned_by_name
      FROM bugs b
      JOIN users creator ON b.created_by = creator.id
      LEFT JOIN users assignee ON b.assigned_to = assignee.id
+     LEFT JOIN users assigner ON b.assigned_by = assigner.id
      ${where}
      ORDER BY b.created_at DESC`,
     values

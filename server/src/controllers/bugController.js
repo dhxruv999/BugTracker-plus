@@ -33,12 +33,14 @@ const createBug = asyncHandler(async (req, res) => {
   const { title, description, priority, status, assignedTo, screenshots } = req.body
 
   let normalizedAssignee = null
+  let normalizedAssigner = null
   if (isAdminRole(req.user.role) && assignedTo) {
     const assignee = await findById(Number(assignedTo))
     if (!assignee || assignee.status !== 'active' || assignee.role !== 'developer') {
       return res.status(400).json({ message: 'Assignee must be an active developer' })
     }
     normalizedAssignee = Number(assignedTo)
+    normalizedAssigner = req.user.id
   }
 
   const bug = await bugModel.createBug({
@@ -48,6 +50,7 @@ const createBug = asyncHandler(async (req, res) => {
     status: BUG_STATUSES.includes(status) ? status : 'Open',
     createdBy: req.user.id,
     assignedTo: normalizedAssignee,
+    assignedBy: normalizedAssigner,
     screenshots
   })
 
@@ -88,12 +91,14 @@ const updateBug = asyncHandler(async (req, res) => {
     if (req.body.assignedTo !== undefined) {
       if (req.body.assignedTo === '' || req.body.assignedTo === null) {
         updates.assigned_to = null
+        updates.assigned_by = null
       } else {
         const assignee = await findById(Number(req.body.assignedTo))
         if (!assignee || assignee.status !== 'active' || assignee.role !== 'developer') {
           return res.status(400).json({ message: 'Assignee must be an active developer' })
         }
         updates.assigned_to = Number(req.body.assignedTo)
+        updates.assigned_by = req.user.id
       }
     }
     if (req.body.screenshots) updates.screenshots = req.body.screenshots
@@ -144,7 +149,10 @@ const assignBug = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: 'Assignee must be an active developer' })
     }
   }
-  const updated = await bugModel.updateBug(req.params.id, { assigned_to: normalized })
+  const updated = await bugModel.updateBug(req.params.id, {
+    assigned_to: normalized,
+    assigned_by: normalized ? req.user.id : null
+  })
   return res.json(updated)
 })
 

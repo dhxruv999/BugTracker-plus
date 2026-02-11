@@ -11,6 +11,7 @@ const BugDetails = () => {
   const [comments, setComments] = useState([])
   const [comment, setComment] = useState('')
   const [error, setError] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   const fetchBug = async () => {
     try {
@@ -57,6 +58,21 @@ const BugDetails = () => {
     }
   }
 
+  const deleteBug = async () => {
+    const confirmed = window.confirm('Delete this bug? This action can be undone by admins.')
+    if (!confirmed) return
+    setError('')
+    setDeleting(true)
+    try {
+      await api.delete(`/bugs/${id}`)
+      navigate('/bugs')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete bug')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (!bug) {
     return <div className="page"><div className="card">Loading bug...</div></div>
   }
@@ -68,14 +84,23 @@ const BugDetails = () => {
           <h2>Bug #{bug.id}</h2>
           <p>{bug.title}</p>
         </div>
-        <Link to="/bugs" className="ghost">Back to bugs</Link>
+        <div className="actions">
+          {(user?.role === 'org_admin') && (
+            <button className="ghost" onClick={deleteBug} disabled={deleting}>
+              {deleting ? 'Deleting...' : 'Delete Bug'}
+            </button>
+          )}
+          <Link to="/bugs" className="ghost">Back to bugs</Link>
+        </div>
       </div>
 
       <div className="card">
         <h3>Details</h3>
         <p><strong>Status:</strong> {bug.status}</p>
         <p><strong>Priority:</strong> {bug.priority}</p>
+        <p><strong>Created By:</strong> {bug.created_by_name || 'Unknown'}</p>
         <p><strong>Assignee:</strong> {bug.assigned_to_name || 'Unassigned'}</p>
+        <p><strong>Assigned By:</strong> {bug.assigned_by_name || '—'}</p>
         <p><strong>Description:</strong> {bug.description || 'No description provided.'}</p>
       </div>
 

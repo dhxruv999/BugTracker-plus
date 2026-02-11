@@ -27,8 +27,8 @@ const TopNav = () => {
 
     const fetchPending = async () => {
       try {
-        const { data } = await api.get('/users/pending-count')
-        if (isMounted) setPendingCount(Number(data?.count || 0))
+        const { data } = await api.get('/users/alerts-count')
+        if (isMounted) setPendingCount(Number(data?.total || 0))
       } catch (err) {
         if (isMounted) setPendingCount(0)
       }

@@ -51,9 +51,11 @@ const BugTable = ({ bugs, user, developers: assignees = [], onAssign, onStatusCh
           <tr>
             <th>ID</th>
             <th>Title</th>
+            <th>Created By</th>
             <th>Status</th>
             <th>Priority</th>
             <th>Assigned</th>
+            <th>Assigned By</th>
             <th>Updated</th>
             <th>Actions</th>
           </tr>
@@ -63,6 +65,7 @@ const BugTable = ({ bugs, user, developers: assignees = [], onAssign, onStatusCh
             <tr key={bug.id}>
               <td>#{bug.id}</td>
               <td>{bug.title}</td>
+              <td>{bug.created_by_name || 'Unknown'}</td>
               <td>
                 {user && canEditStatus(bug) ? (
                   <select
@@ -95,6 +98,7 @@ const BugTable = ({ bugs, user, developers: assignees = [], onAssign, onStatusCh
                   bug.assigned_to_name || 'Unassigned'
                 )}
               </td>
+              <td>{bug.assigned_by_name || '—'}</td>
               <td>{new Date(bug.updated_at).toLocaleDateString()}</td>
               <td>
                 <Link to={`/bugs/${bug.id}`} className="ghost">View</Link>
