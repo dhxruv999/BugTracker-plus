@@ -1,0 +1,53 @@
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import api, { setAuthToken } from '../services/api'
+
+const AuthContext = createContext(null)
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null)
+  const [token, setToken] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('bt_token')
+    const storedUser = localStorage.getItem('bt_user')
+    if (storedToken && storedUser) {
+      setToken(storedToken)
+      setUser(JSON.parse(storedUser))
+      setAuthToken(storedToken)
+    }
+    setLoading(false)
+  }, [])
+
+  const login = async (email, password) => {
+    const { data } = await api.post('/auth/login', { email, password })
+    setToken(data.token)
+    setUser(data.user)
+    localStorage.setItem('bt_token', data.token)
+    localStorage.setItem('bt_user', JSON.stringify(data.user))
+    setAuthToken(data.token)
+    return data.user
+  }
+
+  const register = async (payload) => {
+    const { data } = await api.post('/auth/register', payload)
+    return data
+  }
+
+  const logout = () => {
+    setToken(null)
+    setUser(null)
+    localStorage.removeItem('bt_token')
+    localStorage.removeItem('bt_user')
+    setAuthToken(null)
+  }
+
+  const value = useMemo(
+    () => ({ user, token, loading, login, register, logout }),
+    [user, token, loading]
+  )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export const useAuth = () => useContext(AuthContext)
