@@ -1,15 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../services/api'
 import PublicNav from '../components/PublicNav'
 
 const Landing = () => {
   const [activeRole, setActiveRole] = useState('project_admin')
-  const [metrics, setMetrics] = useState({
-    totalBugs: 0,
-    statusCounts: {},
-    pendingApprovals: 0
-  })
+  const [stageIndex, setStageIndex] = useState(0)
 
   const roleContent = useMemo(
     () => ({
@@ -64,40 +59,15 @@ const Landing = () => {
     }
   }
 
-  useEffect(() => {
-    let isMounted = true
-    const fetchMetrics = async () => {
-      try {
-        const { data } = await api.get('/public/metrics')
-        if (isMounted) {
-          setMetrics({
-            totalBugs: data?.totalBugs || 0,
-            statusCounts: data?.statusCounts || {},
-            pendingApprovals: data?.pendingApprovals || 0
-          })
-        }
-      } catch (err) {
-        if (isMounted) {
-          setMetrics((prev) => ({ ...prev }))
-        }
-      }
-    }
-    fetchMetrics()
-    const interval = setInterval(fetchMetrics, 30000)
-    return () => {
-      isMounted = false
-      clearInterval(interval)
-    }
-  }, [])
+  const stages = ['Open', 'In Progress', 'Resolved', 'Closed']
+  const sampleCard = 'Sample bug: Login button overlap'
 
-  const total = metrics.totalBugs || 0
-  const countOpen = metrics.statusCounts?.Open || 0
-  const countInProgress = metrics.statusCounts?.['In Progress'] || 0
-  const countResolved = metrics.statusCounts?.Resolved || 0
-  const pendingApprovals = metrics.pendingApprovals || 0
-  const percent = (value) => {
-    if (!total) return '0%'
-    return `${Math.round((value / total) * 100)}%`
+  const advanceStage = () => {
+    setStageIndex((prev) => (prev + 1) % stages.length)
+  }
+
+  const resetStage = () => {
+    setStageIndex(0)
   }
 
   return (
@@ -119,16 +89,16 @@ const Landing = () => {
             </div>
             <div className="hero-stats">
               <div>
-                <h3>{total}</h3>
-                <p>Total bugs</p>
+                <h3>Approval-first access</h3>
+                <p>Admins review every new account.</p>
               </div>
               <div>
-                <h3>{countOpen}</h3>
-                <p>Open bugs</p>
+                <h3>Role hierarchy</h3>
+                <p>Clear responsibilities at every level.</p>
               </div>
               <div>
-                <h3>{pendingApprovals}</h3>
-                <p>Pending approvals</p>
+                <h3>Audit-ready trail</h3>
+                <p>Every update stays traceable.</p>
               </div>
             </div>
           </div>
@@ -137,44 +107,30 @@ const Landing = () => {
             <div className="hero-card-header">
               <span className="pulse" />
               <p>Approval-Driven Workflow Mini Kanban Board</p>
-              <span className="tag">Current data</span>
+              <span className="tag">Interactive demo</span>
             </div>
             <div className="hero-card-body">
-              <div className="metric">
-                <div className="metric-row">
-                  <span>Open</span>
-                  <strong>{countOpen}</strong>
-                </div>
-                <div className="bar">
-                  <div className="fill" style={{ width: percent(countOpen) }} />
-                </div>
+              <div className="kanban-board">
+                {stages.map((stage, index) => (
+                  <button
+                    key={stage}
+                    type="button"
+                    className={`kanban-column ${index === stageIndex ? 'active' : ''}`}
+                    onClick={() => setStageIndex(index)}
+                  >
+                    <span className="kanban-title">{stage}</span>
+                    {index === stageIndex && (
+                      <div className="kanban-card">
+                        <strong>{sampleCard}</strong>
+                        <p>Click a column or advance to move it.</p>
+                      </div>
+                    )}
+                  </button>
+                ))}
               </div>
-              <div className="metric">
-                <div className="metric-row">
-                  <span>In Progress</span>
-                  <strong>{countInProgress}</strong>
-                </div>
-                <div className="bar">
-                  <div className="fill alt" style={{ width: percent(countInProgress) }} />
-                </div>
-              </div>
-              <div className="metric">
-                <div className="metric-row">
-                  <span>Resolved</span>
-                  <strong>{countResolved}</strong>
-                </div>
-                <div className="bar">
-                  <div className="fill warn" style={{ width: percent(countResolved) }} />
-                </div>
-              </div>
-              <div className="metric">
-                <div className="metric-row">
-                  <span>Pending approvals</span>
-                  <strong>{pendingApprovals}</strong>
-                </div>
-                <div className="bar">
-                  <div className="fill warn" style={{ width: percent(pendingApprovals) }} />
-                </div>
+              <div className="kanban-actions">
+                <button className="ghost" type="button" onClick={resetStage}>Reset</button>
+                <button className="primary" type="button" onClick={advanceStage}>Advance</button>
               </div>
             </div>
             <div className="hero-card-footer">
