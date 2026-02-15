@@ -37,8 +37,12 @@ app.use(
 )
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' })
-})
+  res.status(200).json({
+    status: 'ok',
+    service: 'BugTracker+ API',
+    timestamp: new Date().toISOString()
+  });
+});
 
 app.use('/api', routes)
 app.use(errorHandler)
