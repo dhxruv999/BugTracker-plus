@@ -9,23 +9,31 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('bt_token')
-    const storedUser = localStorage.getItem('bt_user')
-    if (storedToken && storedUser) {
+    const bootstrap = async () => {
+      const storedToken = localStorage.getItem('bt_token')
+      if (!storedToken) {
+        setLoading(false)
+        return
+      }
+
+      setAuthToken(storedToken)
       try {
-        const parsedUser = JSON.parse(storedUser)
+        const { data } = await api.get('/auth/me')
         setToken(storedToken)
-        setUser(parsedUser)
-        setAuthToken(storedToken)
+        setUser(data)
+        localStorage.setItem('bt_user', JSON.stringify(data))
       } catch (error) {
         localStorage.removeItem('bt_token')
         localStorage.removeItem('bt_user')
         setToken(null)
         setUser(null)
         setAuthToken(null)
+      } finally {
+        setLoading(false)
       }
     }
-    setLoading(false)
+
+    bootstrap()
   }, [])
 
   const login = async (email, password) => {
