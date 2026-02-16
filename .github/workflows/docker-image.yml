@@ -28,12 +28,13 @@ jobs:
           cache-from: type=registry,ref=dhxruv/bugtracker-plus-backend:latest
           cache-to: type=inline
 
-
       - name: Build Frontend Image
         uses: docker/build-push-action@v5
         with:
           context: ./client
           push: true
           tags: dhxruv/bugtracker-plus-frontend:latest
+          build-args: |
+            VITE_API_URL=http://${{ secrets.EC2_PUBLIC_IP }}:4000/api
           cache-from: type=registry,ref=dhxruv/bugtracker-plus-frontend:latest
           cache-to: type=inline

@@ -20,7 +20,7 @@ services:
       retries: 5
 
   backend:
-    build: ./server
+    image: dhxruv/bugtracker-plus-backend:latest
     container_name: bugtracker-backend
     restart: always
     env_file: ./server/.env
@@ -36,7 +36,7 @@ services:
       retries: 5
 
   frontend:
-    build: ./client
+    image: dhxruv/bugtracker-plus-frontend:latest
     container_name: bugtracker-frontend
     restart: always
     ports:
