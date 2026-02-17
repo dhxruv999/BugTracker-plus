@@ -30,6 +30,20 @@ const errorHandler = require('./middleware/errorHandler')
 
 const app = express()
 
+// IMPORTANT for Docker / reverse proxy
+app.set('trust proxy', 1)
+
+// General limiter (for entire API)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 300, // allow more normal traffic
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
+// Apply general limiter
+app.use(generalLimiter)
+
 const origins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
   : '*'
@@ -47,15 +61,6 @@ app.use(
 app.use(express.json({ limit: '5mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(morgan('dev'))
-
-app.use(
-  rateLimit({
-    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 900000),
-    max: Number(process.env.RATE_LIMIT_MAX || 100),
-    standardHeaders: true,
-    legacyHeaders: false
-  })
-)
 
 app.get('/health', (req, res) => {
   res.status(200).json({
