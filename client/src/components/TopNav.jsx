@@ -49,8 +49,8 @@ const TopNav = () => {
   if (!user) return null
 
   return (
-    <header className="topnav">
-      <div className="brand">BugTracker<span>+</span></div>
+    <header className="topnav landing-nav-style">
+      <Link className="brand" to="/dashboard">BugTracker<span>+</span></Link>
       <nav>
         <Link className={location.pathname === '/dashboard' ? 'active' : ''} to="/dashboard">Dashboard</Link>
         <Link className={location.pathname === '/bugs' ? 'active' : ''} to="/bugs">Bugs</Link>
@@ -66,7 +66,7 @@ const TopNav = () => {
           </Link>
         )}
       </nav>
-      <div className="profile">
+      <div className="actions">
         <Link className="profile-link" to="/account">{user.name} · {roleLabel}</Link>
         <button className="ghost" onClick={logout}>Sign out</button>
       </div>

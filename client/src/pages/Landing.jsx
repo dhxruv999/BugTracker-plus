@@ -1,270 +1,364 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import PublicNav from '../components/PublicNav'
 
 const Landing = () => {
-  const [activeRole, setActiveRole] = useState('project_admin')
-  const [stageIndex, setStageIndex] = useState(0)
+  const [activeSpotlight, setActiveSpotlight] = useState(0)
+  const [activeProblem, setActiveProblem] = useState(0)
+  const [activeStep, setActiveStep] = useState(0)
 
-  const roleContent = useMemo(
-    () => ({
-      org_admin: {
-        title: 'Organization Admin',
-        subtitle: 'Ownership, security, and escalation control.',
-        points: [
-          'Approve Project Admins and safeguard resets with the security phrase.',
-          'Oversee every project, report, and escalation path.',
-          'Promote or reassign leadership without breaking compliance.'
-        ]
-      },
-      project_admin: {
-        title: 'Project Admin',
-        subtitle: 'Run day-to-day delivery with clear guardrails.',
-        points: [
-          'Approve Developers and Testers in seconds.',
-          'Assign bugs to the right engineer and unblock sprints.',
-          'Update any issue state with structured transitions.'
-        ]
-      },
-      developer: {
-        title: 'Developer',
-        subtitle: 'Focus on ownership, not paperwork.',
-        points: [
-          'Work only on bugs assigned to you.',
-          'Move issues from Open → In Progress → Resolved.',
-          'Keep the trail clean with comments and updates.'
-        ]
-      },
-      tester: {
-        title: 'Tester',
-        subtitle: 'Ship quality with structured feedback.',
-        points: [
-          'Create precise bug tickets with evidence.',
-          'Reopen or close resolved items after verification.',
-          'Track coverage with dashboards and reports.'
-        ]
-      }
-    }),
-    []
-  )
+  const spotlights = [
+    {
+      title: 'Approvals',
+      metric: 'New users stay pending until approved',
+      detail: 'Keep access controlled so every role is verified before joining the organization.',
+      bullets: ['Pending queue visibility', 'Role assignment controls', 'Approval accountability']
+    },
+    {
+      title: 'Assignments',
+      metric: 'Clear ownership for every issue',
+      detail: 'Assign with confidence and always know who owns the next action.',
+      bullets: ['Owner visibility', 'Assignment tracking', 'Priority alignment']
+    },
+    {
+      title: 'Reporting',
+      metric: 'Leadership-ready visibility',
+      detail: 'Track progress, surface bottlenecks, and export clean reports.',
+      bullets: ['Progress snapshots', 'Audit-ready exports', 'Trend visibility']
+    }
+  ]
 
-  const active = roleContent[activeRole]
+  const problemPairs = [
+    {
+      title: 'Role Confusion',
+      problem: 'Unclear permissions lead to security risks and workflow breakdowns.',
+      solution: '4-tier role hierarchy with enforced boundaries and clear permissions.',
+      fixes: ['Role-based access control', 'Enforced status transitions']
+    },
+    {
+      title: 'Uncontrolled Access',
+      problem: 'Anyone can join without verification, creating security vulnerabilities.',
+      solution: 'Mandatory admin approval ensures only trusted team members gain access.',
+      fixes: ['Pending approval queue', 'Role assignment on approval']
+    },
+    {
+      title: 'Lost Assignments',
+      problem: 'Hard to track ownership, leading to bugs sitting unaddressed.',
+      solution: 'Clear assignment tracking with visible ownership and workload visibility.',
+      fixes: ['Assignment history', 'Dashboard workload tracking']
+    },
+    {
+      title: 'Missing Audit Trail',
+      problem: 'Status changes and decisions disappear without context.',
+      solution: 'Complete audit trail with timestamped actions and exportable reports.',
+      fixes: ['Activity history', 'Exportable reports']
+    }
+  ]
+
+  const features = [
+    {
+      title: 'Role-Based Access',
+      detail: 'Org Admin, Project Admin, Developer, Tester hierarchy.'
+    },
+    {
+      title: 'Approval Workflow',
+      detail: 'New accounts require admin approval before access.'
+    },
+    {
+      title: 'Controlled Status Transitions',
+      detail: 'Enforced lifecycle rules based on role.'
+    },
+    {
+      title: 'Comment System',
+      detail: 'Structured collaboration with recoverable history.'
+    },
+    {
+      title: 'Dashboard and Reports',
+      detail: 'Real-time stats plus CSV export for audits.'
+    },
+    {
+      title: 'Ownership Visibility',
+      detail: 'Assignments stay visible with clear accountability.'
+    }
+  ]
+
+  const steps = [
+    {
+      title: 'Register & Request Access',
+      detail: 'New users sign up and wait for admin approval. Your account stays in pending status until verified.',
+      points: ['Secure registration', 'Pending approval queue', 'Role assignment on approval']
+    },
+    {
+      title: 'Admin Approval',
+      detail: 'Org Admins or Project Admins review and approve new members, assigning appropriate roles.',
+      points: ['Review pending users', 'Assign roles (Developer/Tester)', 'Activate accounts']
+    },
+    {
+      title: 'Create & Assign Bugs',
+      detail: 'Testers create bugs, Project Admins assign them to Developers based on priority and expertise.',
+      points: ['Tester creates bug reports', 'Admin assigns to Developer', 'Priority-based routing']
+    },
+    {
+      title: 'Track & Resolve',
+      detail: 'Developers update status, move bugs through lifecycle, and generate reports for insights.',
+      points: ['Status transitions', 'Lifecycle tracking', 'Export reports']
+    }
+  ]
 
   const handleScroll = (e, targetId) => {
     e.preventDefault()
     const target = document.getElementById(targetId)
     if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const navHeight = 72 // var(--nav-height)
+      const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight
+      window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth'
+      })
       window.history.replaceState(null, '', `#${targetId}`)
     }
   }
 
-  const stages = ['Open', 'In Progress', 'Resolved', 'Closed']
-  const sampleCard = 'Sample bug: Login button overlap'
+  const activeSpotlightItem = spotlights[activeSpotlight]
+  const activeProblemItem = problemPairs[activeProblem]
+  const activeStepItem = steps[activeStep]
 
-  const advanceStage = () => {
-    setStageIndex((prev) => (prev + 1) % stages.length)
+  useEffect(() => {
+    // Trigger animation when problem changes
+    const solutionCard = document.querySelector('.solution-card')
+    if (solutionCard) {
+      solutionCard.classList.remove('fade-in')
+      setTimeout(() => {
+        solutionCard.classList.add('fade-in')
+      }, 10)
+    }
+  }, [activeProblem])
+
+  useEffect(() => {
+    // Trigger animation when step changes
+    const stepperPanel = document.querySelector('.stepper-panel')
+    if (stepperPanel) {
+      stepperPanel.classList.remove('fade-in')
+      setTimeout(() => {
+        stepperPanel.classList.add('fade-in')
+      }, 10)
+    }
+  }, [activeStep])
+
+  const goNext = () => {
+    setActiveSpotlight((prev) => (prev + 1) % spotlights.length)
   }
 
-  const resetStage = () => {
-    setStageIndex(0)
+  const goPrev = () => {
+    setActiveSpotlight((prev) => (prev - 1 + spotlights.length) % spotlights.length)
   }
 
   return (
-    <div className="landing-page">
+    <div className="landing-page landing-v2">
       <PublicNav showSections onNavClick={handleScroll} />
 
-      <section className="hero">
+      <section className="hero" id="top">
         <div className="hero-grid">
           <div className="hero-copy">
-            <p className="eyebrow">BugTracker+</p>
-            <h1>Classy, approval-driven bug flow for modern product teams.</h1>
+            <h1>Track Bugs Precisely. Control Teams Securely.</h1>
             <p className="lead">
-              BugTracker+ keeps approvals, roles, and accountability sharp—so your team ships with confidence,
-              without losing the paper trail.
+              A focused bug tracking system with role-based workflows, approvals, and clear accountability.
             </p>
             <div className="hero-actions">
-              <Link className="primary" to="/register">Create account</Link>
-              <Link className="ghost" to="/login">I already have access</Link>
+              <Link className="primary" to="/register">Get Started</Link>
+              <Link className="ghost" to="/login">Login</Link>
             </div>
-            <div className="hero-stats">
-              <div>
+            <div className="hero-metrics">
+              <div className="metric-card">
                 <h3>Approval-first access</h3>
-                <p>Admins review every new account.</p>
+                <p>Every new account is reviewed.</p>
               </div>
-              <div>
-                <h3>Role hierarchy</h3>
-                <p>Clear responsibilities at every level.</p>
+              <div className="metric-card">
+                <h3>Role-driven workflow</h3>
+                <p>Clear responsibilities at each level.</p>
               </div>
-              <div>
+              <div className="metric-card">
                 <h3>Audit-ready trail</h3>
-                <p>Every update stays traceable.</p>
+                <p>Updates remain traceable and accountable.</p>
               </div>
             </div>
           </div>
 
-          <div className="hero-card">
-            <div className="hero-card-header">
-              <span className="pulse" />
-              <p>Approval-Driven Workflow Mini Kanban Board</p>
-              <span className="tag">Interactive demo</span>
+          <div className="hero-visual">
+            <div className="visual-header">
+              <span>Product Focus</span>
+              <span className="visual-tag">Interactive</span>
             </div>
-            <div className="hero-card-body">
-              <div className="kanban-board">
-                {stages.map((stage, index) => (
+            <div className="visual-body">
+              <div className="spotlight-tabs">
+                {spotlights.map((item, index) => (
                   <button
-                    key={stage}
+                    key={item.title}
                     type="button"
-                    className={`kanban-column ${index === stageIndex ? 'active' : ''}`}
-                    onClick={() => setStageIndex(index)}
+                    className={`spotlight-tab ${index === activeSpotlight ? 'active' : ''}`}
+                    onClick={() => setActiveSpotlight(index)}
                   >
-                    <span className="kanban-title">{stage}</span>
-                    {index === stageIndex && (
-                      <div className="kanban-card">
-                        <strong>{sampleCard}</strong>
-                        <p>Click a column or advance to move it.</p>
-                      </div>
-                    )}
+                    {item.title}
                   </button>
                 ))}
               </div>
-              <div className="kanban-actions">
-                <button className="ghost" type="button" onClick={resetStage}>Reset</button>
-                <button className="primary" type="button" onClick={advanceStage}>Advance</button>
+              <div className="spotlight-panel">
+                <h3>{activeSpotlightItem.title}</h3>
+                <p>{activeSpotlightItem.detail}</p>
+                <span className="spotlight-metric">{activeSpotlightItem.metric}</span>
+                <ul className="spotlight-list">
+                  {activeSpotlightItem.bullets.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="spotlight-actions">
+                <button type="button" className="ghost" onClick={goPrev}>Previous</button>
+                <button type="button" className="primary" onClick={goNext}>Next</button>
               </div>
             </div>
-            <div className="hero-card-footer">
-              <p>Clean, fast, and aligned with real workflows.</p>
+            <div className="visual-footer">
+              Click a tab or cycle through the focus areas.
             </div>
           </div>
         </div>
-        <div className="hero-orbits">
-          <span className="orbit dot-1" />
-          <span className="orbit dot-2" />
-          <span className="orbit dot-3" />
+      </section>
+
+      <section className="section problem" id="problem">
+        <div className="problem-layout">
+          <div className="problem-tabs">
+            <h2>Why Traditional Bug Tracking Fails</h2>
+            <p className="problem-intro">Traditional bug trackers lack structure, leading to confusion, security risks, and lost accountability. See how BugTracker+ solves these critical problems.</p>
+            <div className="problem-tab-list">
+              {problemPairs.map((item, index) => (
+                <button
+                  key={item.title}
+                  type="button"
+                  className={`problem-tab ${index === activeProblem ? 'active' : ''}`}
+                  onClick={() => setActiveProblem(index)}
+                  onMouseEnter={() => {
+                    if (index !== activeProblem) {
+                      document.querySelectorAll('.problem-tab')[index].style.transform = 'translateX(4px)'
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (index !== activeProblem) {
+                      document.querySelectorAll('.problem-tab')[index].style.transform = ''
+                    }
+                  }}
+                >
+                  <span className="problem-tab-icon">
+                    {index === activeProblem ? '✓' : index + 1}
+                  </span>
+                  <div className="problem-tab-content">
+                    <span className="problem-tab-title">{item.title}</span>
+                    <span className="problem-sub">{item.problem.substring(0, 100)}...</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className={`solution-card ${activeProblem === 0 ? 'fade-in' : ''}`} key={activeProblem}>
+            <div className="solution-header">
+              <span className="solution-kicker">BugTracker+ Solution</span>
+            </div>
+            <h3>{activeProblemItem.title}</h3>
+            <div className="problem-vs-solution">
+              <div className="problem-box">
+                <div className="problem-label">Problem</div>
+                <p className="problem-detail">{activeProblemItem.problem}</p>
+              </div>
+              <div className="solution-arrow">→</div>
+              <div className="solution-box">
+                <div className="solution-label">Solution</div>
+                <p className="solution-detail">{activeProblemItem.solution}</p>
+              </div>
+            </div>
+            <ul className="solution-list">
+              {activeProblemItem.fixes.map((item, fixIndex) => (
+                <li key={item} style={{ animationDelay: `${fixIndex * 0.1}s` }}>
+                  <span className="fix-icon">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
       <section className="section" id="features">
         <div className="section-title">
-          <h2>Core Features, elevated</h2>
-          <p>Everything you asked for, polished to feel enterprise-grade.</p>
+          <h2>Key Features</h2>
+          <p>Clean, secure, and easy to explain.</p>
         </div>
         <div className="feature-grid">
-          <div className="feature-card">
-            <h3>Approval-first access</h3>
-            <p>First user becomes Org Admin, everyone else is reviewed before they touch a ticket.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Structured transitions</h3>
-            <p>Open → In Progress → Resolved → Closed, with controlled reopen for QA.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Assign + trace</h3>
-            <p>Every assignment records who assigned it. Perfect for accountability.</p>
-          </div>
-          <div className="feature-card">
-            <h3>Soft delete & audit logs</h3>
-            <p>Nothing disappears — issues and comments remain recoverable.</p>
-          </div>
+          {features.map((feature) => (
+            <div key={feature.title} className="feature-card">
+              <h3>{feature.title}</h3>
+              <p>{feature.detail}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       <section className="section workflow" id="workflow">
         <div className="section-title">
-          <h2>Workflow that matches real teams</h2>
-          <p>Designed for QA, Engineering, and Leadership in one loop.</p>
+          <h2>How It Works</h2>
+          <p>A simple 4-step workflow that keeps your team organized.</p>
         </div>
-        <div className="workflow-grid">
-          <div className="workflow-card">
-            <h4>1. Submit</h4>
-            <p>Testers create tickets with screenshots, priority, and impact.</p>
-          </div>
-          <div className="workflow-card">
-            <h4>2. Assign</h4>
-            <p>Project Admins allocate ownership to developers instantly.</p>
-          </div>
-          <div className="workflow-card">
-            <h4>3. Resolve</h4>
-            <p>Developers move the issue to Resolved with full context.</p>
-          </div>
-          <div className="workflow-card">
-            <h4>4. Verify</h4>
-            <p>Testers close or reopen with feedback and comments.</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="section role-section" id="roles">
-        <div className="section-title">
-          <h2>Role clarity, zero confusion</h2>
-          <p>Switch between roles to see what each user can do.</p>
-        </div>
-        <div className="role-switch">
-          <button className={activeRole === 'org_admin' ? 'active' : ''} onClick={() => setActiveRole('org_admin')}>
-            Org Admin
-          </button>
-          <button className={activeRole === 'project_admin' ? 'active' : ''} onClick={() => setActiveRole('project_admin')}>
-            Project Admin
-          </button>
-          <button className={activeRole === 'developer' ? 'active' : ''} onClick={() => setActiveRole('developer')}>
-            Developer
-          </button>
-          <button className={activeRole === 'tester' ? 'active' : ''} onClick={() => setActiveRole('tester')}>
-            Tester
-          </button>
-        </div>
-        <div className="role-panel">
-          <h3>{active.title}</h3>
-          <p className="role-subtitle">{active.subtitle}</p>
-          <div className="role-points">
-            {active.points.map((point) => (
-              <div key={point} className="role-point">
-                <span className="dot" />
-                <p>{point}</p>
-              </div>
+        <div className="stepper">
+          <div className="stepper-tabs">
+            {steps.map((step, index) => (
+              <button
+                key={step.title}
+                type="button"
+                className={`stepper-tab ${index === activeStep ? 'active' : ''}`}
+                onClick={() => setActiveStep(index)}
+              >
+                <span className="step-number">{index + 1}</span>
+                <div className="step-content">
+                  <span className="step-title">{step.title}</span>
+                </div>
+              </button>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="section reports" id="reports">
-        <div className="section-title">
-          <h2>Reports that speak for you</h2>
-          <p>Export CSVs, visualize trends, and share quarterly QA insights.</p>
-        </div>
-        <div className="report-grid">
-          <div className="report-card">
-            <h4>Status distribution</h4>
-            <div className="stack">
-              <span style={{ width: '38%' }} />
-              <span style={{ width: '26%' }} />
-              <span style={{ width: '24%' }} />
-              <span style={{ width: '12%' }} />
+          <div className={`stepper-panel ${activeStep === 0 ? 'fade-in' : ''}`} key={activeStep}>
+            <div className="stepper-header">
+              <span className="step-badge">Step {activeStep + 1}</span>
             </div>
-            <p>Instant view of Open vs Closed velocity.</p>
-          </div>
-          <div className="report-card">
-            <h4>Priority heat</h4>
-            <div className="heat">
-              <span />
-              <span />
-              <span />
-              <span />
+            <h3>{activeStepItem.title}</h3>
+            <p>{activeStepItem.detail}</p>
+            <div className="stepper-features">
+              <ul className="stepper-list">
+                {activeStepItem.points.map((item, pointIndex) => (
+                  <li key={item} style={{ animationDelay: `${pointIndex * 0.1}s` }}>
+                    <span className="step-check">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <p>Spot critical issues before they hit production.</p>
-          </div>
-          <div className="report-card">
-            <h4>CSV export ready</h4>
-            <p>One click to share a clean audit trail with leadership.</p>
-            <Link className="ghost" to="/login">Export demo</Link>
           </div>
         </div>
       </section>
 
-      <footer className="landing-footer">
-        © {new Date().getFullYear()} BugTracker+. All rights reserved.
-      </footer>
+      <section className="cta" id="cta">
+        <div className="cta-card">
+          <div>
+            <h2>Ready to streamline your bug management?</h2>
+            <p>Make approvals, ownership, and reporting effortless.</p>
+          </div>
+          <div className="cta-actions">
+            <Link className="primary" to="/register">Create Account</Link>
+          </div>
+        </div>
+        <div className="cta-footer">
+          <div className="footer-tagline">
+            BugTracker+ | Structured Bug Lifecycle | Approval-Driven Access Control | Real-Time Dashboard Insights
+          </div>
+          <div className="footer-copy">© 2026 Dhruv Maheshwari. All rights reserved.</div>
+        </div>
+      </section>
     </div>
   )
 }
