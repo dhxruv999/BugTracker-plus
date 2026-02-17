@@ -1,4 +1,25 @@
-require('dotenv').config()
+const fs = require('fs')
+const path = require('path')
+const dotenv = require('dotenv')
+
+const envFileOverride = process.env.ENV_FILE
+  ? path.resolve(process.cwd(), process.env.ENV_FILE)
+  : null
+const envByNodeEnv = process.env.NODE_ENV
+  ? path.resolve(process.cwd(), `.env.${process.env.NODE_ENV}`)
+  : null
+const defaultEnv = path.resolve(process.cwd(), '.env')
+
+const resolvedEnv =
+  (envFileOverride && fs.existsSync(envFileOverride) && envFileOverride) ||
+  (envByNodeEnv && fs.existsSync(envByNodeEnv) && envByNodeEnv) ||
+  (fs.existsSync(defaultEnv) && defaultEnv)
+
+if (resolvedEnv) {
+  dotenv.config({ path: resolvedEnv })
+} else {
+  dotenv.config()
+}
 const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')

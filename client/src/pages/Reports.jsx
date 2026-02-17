@@ -1,10 +1,10 @@
 import React from 'react'
+import { API_BASE_URL } from '../services/api'
 
 const Reports = () => {
   const downloadCsv = () => {
     const token = localStorage.getItem('bt_token')
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
-    const url = `${baseUrl}/reports/bugs.csv`
+    const url = `${API_BASE_URL}/reports/bugs.csv`
 
     fetch(url, {
       headers: {

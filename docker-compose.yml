@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   mysql:
     image: mysql:8
@@ -34,8 +35,8 @@ services:
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX}
       ORG_ADMIN_RESET_PHRASE_HASH: ${ORG_ADMIN_RESET_PHRASE_HASH}
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
     depends_on:
       mysql:
         condition: service_healthy
