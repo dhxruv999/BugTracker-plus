@@ -55,8 +55,8 @@ jobs:
           script: |
             set -e
             cd ~/bugtracker-plus
-            docker compose pull
+            docker-compose pull
 
             docker image prune -af || true
             
-            docker compose up -d
+            docker-compose up -d
