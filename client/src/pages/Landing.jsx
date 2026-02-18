@@ -109,7 +109,8 @@ const Landing = () => {
     e.preventDefault()
     const target = document.getElementById(targetId)
     if (target) {
-      const navHeight = 72 // var(--nav-height)
+      const navHeightPx = getComputedStyle(document.documentElement).getPropertyValue('--nav-height').trim()
+      const navHeight = parseInt(navHeightPx, 10) || 72
       const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight
       window.scrollTo({
         top: targetPosition,
