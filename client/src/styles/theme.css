@@ -2599,7 +2599,7 @@ a.ghost {
 
 @media (max-width: 600px) {
   :root {
-    --nav-height: 44px;
+    --nav-height: 52px;
   }
 
   .landing-nav {
@@ -2609,10 +2609,10 @@ a.ghost {
     align-items: center;
     align-content: flex-start;
     gap: 0;
-    padding: 0 0.6rem !important;
-    min-height: 44px !important;
-    max-height: 44px !important;
-    height: 44px !important;
+    padding: 0 0.75rem !important;
+    min-height: 52px !important;
+    max-height: 52px !important;
+    height: 52px !important;
     overflow: hidden;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -2622,19 +2622,19 @@ a.ghost {
   .landing-nav.menu-open {
     max-height: none !important;
     height: auto !important;
-    min-height: 44px !important;
+    min-height: 52px !important;
     overflow: visible;
     padding-bottom: 0.25rem;
   }
 
   .landing-nav .brand {
-    font-size: 0.9rem !important;
+    font-size: 1.1rem !important;
     letter-spacing: 0.2px;
-    line-height: 44px !important;
-    height: 44px !important;
+    line-height: 52px !important;
+    height: 52px !important;
     flex: 1 1 0;
     min-width: 0;
-    max-width: calc(100% - 44px);
+    max-width: calc(100% - 52px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2655,8 +2655,8 @@ a.ghost {
     order: 2;
     flex-shrink: 0;
     margin-left: auto;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     gap: 5px;
     border-radius: 8px;
@@ -2691,11 +2691,11 @@ a.ghost {
   }
 
   .landing-nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
+    transform: translateY(7.5px) rotate(45deg);
   }
 
   .landing-nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
+    transform: translateY(-7.5px) rotate(-45deg);
   }
 
   .landing-nav-desktop,
@@ -2800,33 +2800,33 @@ a.ghost {
 
 @media (max-width: 360px) {
   :root {
-    --nav-height: 40px;
+    --nav-height: 48px;
   }
 
   .landing-nav {
-    padding: 0 0.5rem !important;
-    min-height: 40px !important;
-    max-height: 40px !important;
-    height: 40px !important;
+    padding: 0 0.6rem !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    height: 48px !important;
   }
 
   .landing-nav.menu-open {
     max-height: none !important;
     height: auto !important;
-    min-height: 40px !important;
+    min-height: 48px !important;
     padding-bottom: 0.2rem;
   }
 
   .landing-nav .brand {
-    font-size: 0.8125rem !important;
-    line-height: 40px !important;
-    height: 40px !important;
-    max-width: calc(100% - 40px);
+    font-size: 1rem !important;
+    line-height: 48px !important;
+    height: 48px !important;
+    max-width: calc(100% - 48px);
   }
 
   .landing-nav-toggle {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     gap: 4px;
   }
 
@@ -2835,11 +2835,11 @@ a.ghost {
   }
 
   .landing-nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(1) {
-    transform: translateY(6px) rotate(45deg);
+    transform: translateY(6.5px) rotate(45deg);
   }
 
   .landing-nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(3) {
-    transform: translateY(-6px) rotate(-45deg);
+    transform: translateY(-6.5px) rotate(-45deg);
   }
 }
 
