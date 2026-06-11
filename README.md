@@ -18,11 +18,6 @@
   <img src="https://img.shields.io/badge/Nginx-Reverse%20Proxy-009639?logo=nginx&logoColor=white">
 </p>
 
-<p align="center">
-  <a href="YOUR_LIVE_URL"><strong>🚀 Live Demo</strong></a> •
-  <a href="https://github.com/dhxruv999/BugTracker-Plus"><strong>📂 Source Code</strong></a>
-</p>
-
 ---
 
 ## 📸 Application Preview
